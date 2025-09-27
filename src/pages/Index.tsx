@@ -1,4 +1,5 @@
 import { useCryptoData } from "@/hooks/useCryptoData";
+import { useAuth } from "@/hooks/useAuth";
 import { PortfolioSummary } from "@/components/crypto/PortfolioSummary";
 import { PositionCard } from "@/components/crypto/PositionCard";
 import { AddPositionForm } from "@/components/crypto/AddPositionForm";
@@ -6,9 +7,13 @@ import { MarketMovers } from "@/components/crypto/MarketMovers";
 import { QuickActions } from "@/components/crypto/QuickActions";
 import { InfoPanel } from "@/components/crypto/InfoPanel";
 import { Card } from "@/components/ui/card";
-import { Loader2, Wallet, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Wallet, TrendingUp, LogOut, User } from "lucide-react";
+import { Navigate } from "react-router-dom";
 
 const Index = () => {
+  const { user, loading: authLoading, signOut } = useAuth();
+  
   const {
     coins,
     livePortfolio,
@@ -20,7 +25,24 @@ const Index = () => {
     removePosition,
     resetPortfolio,
     refreshData,
-  } = useCryptoData();
+  } = useCryptoData(user?.id);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to auth if not logged in
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20">
@@ -39,6 +61,14 @@ const Index = () => {
                     <div>
                       <h1 className="text-3xl font-bold text-foreground">Crypto Portfolio</h1>
                       <p className="text-muted-foreground">Track your investments and market performance</p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{user.email}</span>
+                        <Button onClick={signOut} variant="ghost" size="sm" className="ml-2">
+                          <LogOut className="h-4 w-4 mr-1" />
+                          Sign Out
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>

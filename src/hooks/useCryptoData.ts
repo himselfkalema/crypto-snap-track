@@ -1,28 +1,49 @@
 import { useState, useEffect } from 'react';
 import { Coin, PortfolioPosition, LivePortfolioPosition, PortfolioSummary } from '@/types/crypto';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
-export function useCryptoData() {
+export function useCryptoData(userId?: string) {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioPosition[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  // Load portfolio from localStorage
+  // Load portfolio from Supabase
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('crypto_portfolio_v1');
-      if (saved) {
-        setPortfolio(JSON.parse(saved));
+    if (!userId) return;
+    
+    const fetchPortfolio = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await supabase
+          .from('portfolios')
+          .select('*')
+          .eq('user_id', userId);
+        
+        if (error) {
+          setError('Failed to load portfolio');
+        } else {
+          // Map database fields to interface format
+          const mappedData = (data || []).map(item => ({
+            id: item.coin_id,
+            symbol: item.symbol,
+            name: item.name,
+            qty: item.qty,
+            buyPrice: item.buy_price
+          }));
+          setPortfolio(mappedData);
+        }
+      } catch (e) {
+        setError('Failed to load portfolio');
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {
-      console.warn('Could not load saved portfolio', e);
-    }
-  }, []);
+    };
 
-  // Save portfolio when it changes
-  useEffect(() => {
-    localStorage.setItem('crypto_portfolio_v1', JSON.stringify(portfolio));
-  }, [portfolio]);
+    fetchPortfolio();
+  }, [userId]);
 
   // Fetch market data
   const fetchCoins = async () => {
@@ -63,8 +84,8 @@ export function useCryptoData() {
   };
 
   // Add position
-  const addPosition = ({ id, qty, buyPrice }: { id: string; qty: number; buyPrice: number }) => {
-    if (!id || !qty) return;
+  const addPosition = async ({ id, qty, buyPrice }: { id: string; qty: number; buyPrice: number }) => {
+    if (!userId || !id || !qty) return;
     
     const coin = coins.find((c) => c.id === id) || findCoin(id);
     if (!coin) {
@@ -72,41 +93,125 @@ export function useCryptoData() {
       return;
     }
 
-    const existing = portfolio.find((p) => p.id === coin.id);
-    if (existing) {
-      // Update existing position with weighted average
-      const totalQty = Number(existing.qty) + Number(qty);
-      const totalCost = (existing.buyPrice * existing.qty) + (buyPrice * qty);
-      const avgPrice = Number((totalCost / totalQty).toFixed(2));
+    try {
+      const existing = portfolio.find((p) => p.id === coin.id);
       
-      const updated = portfolio.map((p) =>
-        p.id === coin.id
-          ? { ...p, qty: totalQty, buyPrice: avgPrice }
-          : p
-      );
-      setPortfolio(updated);
-    } else {
-      setPortfolio((p) => [...p, { 
-        id: coin.id, 
-        symbol: coin.symbol, 
-        name: coin.name, 
-        qty: Number(qty), 
-        buyPrice: Number(buyPrice) 
-      }]);
+      if (existing) {
+        // Update existing position with weighted average
+        const totalQty = Number(existing.qty) + Number(qty);
+        const totalCost = (existing.buyPrice * existing.qty) + (buyPrice * qty);
+        const avgPrice = Number((totalCost / totalQty).toFixed(8));
+        
+        const { error } = await supabase
+          .from('portfolios')
+          .update({ 
+            qty: totalQty, 
+            buy_price: avgPrice,
+            updated_at: new Date().toISOString()
+          })
+          .eq('coin_id', existing.id)
+          .eq('user_id', userId);
+
+        if (error) {
+          setError('Failed to update position');
+          return;
+        }
+
+        setPortfolio(portfolio.map(p => 
+          p.id === existing.id 
+            ? { ...p, qty: totalQty, buyPrice: avgPrice }
+            : p
+        ));
+      } else {
+        // Create new position
+        const { data, error } = await supabase
+          .from('portfolios')
+          .insert({
+            user_id: userId,
+            coin_id: coin.id,
+            symbol: coin.symbol,
+            name: coin.name,
+            qty: Number(qty),
+            buy_price: Number(buyPrice)
+          })
+          .select()
+          .single();
+
+        if (error) {
+          setError('Failed to add position');
+          return;
+        }
+
+        const newPosition: PortfolioPosition = {
+          id: coin.id,  // Use coin ID for consistency
+          symbol: coin.symbol,
+          name: coin.name,
+          qty: Number(qty),
+          buyPrice: Number(buyPrice)
+        };
+
+        setPortfolio([...portfolio, newPosition]);
+      }
+      
+      setError(null);
+      toast({
+        title: "Position added",
+        description: `Added ${qty} ${coin.symbol.toUpperCase()} to your portfolio`
+      });
+    } catch (e) {
+      setError('Failed to save position');
     }
-    
-    setError(null);
   };
 
   // Remove position
-  const removePosition = (id: string) => {
-    setPortfolio((p) => p.filter((x) => x.id !== id));
+  const removePosition = async (coinId: string) => {
+    if (!userId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('portfolios')
+        .delete()
+        .eq('coin_id', coinId)
+        .eq('user_id', userId);
+
+      if (error) {
+        setError('Failed to remove position');
+        return;
+      }
+
+      setPortfolio(portfolio.filter(p => p.id !== coinId));
+      toast({
+        title: "Position removed",
+        description: "Successfully removed from your portfolio"
+      });
+    } catch (e) {
+      setError('Failed to remove position');
+    }
   };
 
   // Reset portfolio
-  const resetPortfolio = () => {
-    setPortfolio([]);
-    localStorage.removeItem('crypto_portfolio_v1');
+  const resetPortfolio = async () => {
+    if (!userId) return;
+    
+    try {
+      const { error } = await supabase
+        .from('portfolios')
+        .delete()
+        .eq('user_id', userId);
+
+      if (error) {
+        setError('Failed to reset portfolio');
+        return;
+      }
+
+      setPortfolio([]);
+      toast({
+        title: "Portfolio reset",
+        description: "All positions have been removed"
+      });
+    } catch (e) {
+      setError('Failed to reset portfolio');
+    }
   };
 
   // Compute live portfolio with current prices
