@@ -9,7 +9,7 @@ import { InfoPanel } from "@/components/crypto/InfoPanel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Wallet, TrendingUp, LogOut, User } from "lucide-react";
-import { Navigate } from "react-router-dom";
+import { Navigate, Link } from "react-router-dom";
 
 const Index = () => {
   const { user, loading: authLoading, signOut } = useAuth();
@@ -64,6 +64,12 @@ const Index = () => {
                       <div className="flex items-center gap-2 mt-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">{user.email}</span>
+                        <Link to="/wallet">
+                          <Button variant="outline" size="sm" className="ml-2">
+                            <Wallet className="h-4 w-4 mr-1" />
+                            Wallet
+                          </Button>
+                        </Link>
                         <Button onClick={signOut} variant="ghost" size="sm" className="ml-2">
                           <LogOut className="h-4 w-4 mr-1" />
                           Sign Out
