@@ -21,6 +21,56 @@ serve(async (req) => {
   }
 
   try {
+    // Get country from Cloudflare header
+    const country = req.headers.get("cf-ipcountry");
+    console.log('Request from country:', country);
+    
+    // Get authenticated user
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Authentication required' 
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Invalid authentication' 
+        }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Geo-blocking: Only allow access from Uganda
+    if (country && country !== "UG") {
+      console.log(`Access denied for country: ${country}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'This service is only available in Uganda' 
+        }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     const { user_id, phone, amount } = await req.json();
     
     console.log('Topup request:', { user_id, phone, amount });
