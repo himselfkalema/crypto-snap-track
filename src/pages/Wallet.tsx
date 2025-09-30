@@ -38,11 +38,11 @@ const WalletPage = () => {
   const [amount, setAmount] = useState("");
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
-  // Fetch wallet data
+  // Fetch wallet data - only run when user exists
   useEffect(() => {
+    if (!user) return;
+    
     const fetchWallet = async () => {
-      if (!user) return;
-      
       try {
         const { data, error } = await supabase
           .from("wallets")
@@ -69,11 +69,11 @@ const WalletPage = () => {
     fetchWallet();
   }, [user, toast]);
 
-  // Fetch transactions
+  // Fetch transactions - only run when user exists
   useEffect(() => {
+    if (!user) return;
+    
     const fetchTransactions = async () => {
-      if (!user) return;
-      
       setLoadingTransactions(true);
       try {
         const { data, error } = await supabase
