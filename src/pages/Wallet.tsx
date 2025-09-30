@@ -38,23 +38,6 @@ const WalletPage = () => {
   const [amount, setAmount] = useState("");
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center">
-        <div className="flex items-center gap-3">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="text-muted-foreground">Loading...</span>
-        </div>
-      </div>
-    );
-  }
-
-  // Redirect to auth if not logged in
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   // Fetch wallet data
   useEffect(() => {
     const fetchWallet = async () => {
@@ -114,6 +97,23 @@ const WalletPage = () => {
 
     fetchTransactions();
   }, [user]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <span className="text-muted-foreground">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to auth if not logged in
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
 
   const handleTopUp = async () => {
     if (!user || !wallet) return;
