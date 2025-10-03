@@ -56,7 +56,23 @@ serve(async (req) => {
       );
     }
 
-    // Geo-blocking: Only allow access from Uganda
+    // Geo-blocking: Block India, South Africa, and Nigeria
+    const blockedCountries = ['IN', 'ZA', 'NG'];
+    if (country && blockedCountries.includes(country)) {
+      console.log(`Access denied for blocked country: ${country}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'This service is not available in your country' 
+        }),
+        { 
+          status: 403, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // Only allow Uganda
     if (country && country !== "UG") {
       console.log(`Access denied for country: ${country}`);
       return new Response(
