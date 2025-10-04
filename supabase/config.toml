@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.wallet-topup]
 verify_jwt = true
+
+[functions.mobile-money]
+verify_jwt = false

@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
 import { Wallet, Plus, History, DollarSign, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import MobileMoneyTopup from "@/components/MobileMoneyTopup";
 
 interface WalletData {
   id: string;
@@ -364,6 +365,37 @@ const WalletPage = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Mobile Money Top-up */}
+        <div className="mt-6">
+          <MobileMoneyTopup 
+            userId={user.id} 
+            onSuccess={() => {
+              // Refresh wallet and transactions after successful topup
+              if (wallet) {
+                supabase
+                  .from("wallets")
+                  .select("*")
+                  .eq("user_id", user.id)
+                  .eq("currency", "UGX")
+                  .single()
+                  .then(({ data }) => {
+                    if (data) setWallet(data);
+                  });
+              }
+              
+              supabase
+                .from("wallet_transactions")
+                .select("*")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(10)
+                .then(({ data }) => {
+                  if (data) setTransactions(data);
+                });
+            }}
+          />
         </div>
       </div>
     </div>

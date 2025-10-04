@@ -53,6 +53,42 @@ export type Database = {
         }
         Relationships: []
       }
+      mobile_money_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string
+          external_tx_id: string | null
+          id: string
+          phone_number: string
+          provider: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string
+          external_tx_id?: string | null
+          id?: string
+          phone_number: string
+          provider: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string
+          external_tx_id?: string | null
+          id?: string
+          phone_number?: string
+          provider?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       newsletter_subscriptions: {
         Row: {
           email: string
@@ -258,7 +294,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_wallet_balance: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
