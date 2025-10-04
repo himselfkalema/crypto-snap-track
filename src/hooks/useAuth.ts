@@ -87,12 +87,52 @@ export function useAuth() {
     return { error };
   };
 
+  const signInWithGoogle = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`
+      }
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Google sign in failed",
+        description: error.message
+      });
+    }
+
+    return { error };
+  };
+
+  const signInWithApple = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: {
+        redirectTo: `${window.location.origin}/`
+      }
+    });
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Apple sign in failed",
+        description: error.message
+      });
+    }
+
+    return { error };
+  };
+
   return {
     user,
     session,
     loading,
     signUp,
     signIn,
-    signOut
+    signOut,
+    signInWithGoogle,
+    signInWithApple
   };
 }
