@@ -3,6 +3,8 @@ import { Coin, PortfolioPosition, LivePortfolioPosition, PortfolioSummary } from
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+const COINGECKO_API_KEY = 'CG-B3pPNyHHBxceCZkpqengQ5Kp';
+
 export function useCryptoData(userId?: string) {
   const [coins, setCoins] = useState<Coin[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioPosition[]>([]);
@@ -52,7 +54,12 @@ export function useCryptoData(userId?: string) {
     
     try {
       const response = await fetch(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false'
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false',
+        {
+          headers: {
+            'x-cg-demo-api-key': COINGECKO_API_KEY
+          }
+        }
       );
       
       if (!response.ok) {
