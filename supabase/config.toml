@@ -8,3 +8,5 @@ verify_jwt = true
 
 [functions.mobile-money]
 verify_jwt = false
+
+[functions.admin-deposits]
