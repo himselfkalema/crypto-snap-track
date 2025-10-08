@@ -206,6 +206,7 @@ export type Database = {
           full_name: string | null
           id: string
           mobile: string | null
+          provider: string | null
           updated_at: string | null
           username: string | null
         }
@@ -214,6 +215,7 @@ export type Database = {
           full_name?: string | null
           id: string
           mobile?: string | null
+          provider?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -222,6 +224,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           mobile?: string | null
+          provider?: string | null
           updated_at?: string | null
           username?: string | null
         }
