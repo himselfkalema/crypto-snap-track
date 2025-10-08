@@ -205,6 +205,7 @@ export type Database = {
           avatar_url: string | null
           full_name: string | null
           id: string
+          mobile: string | null
           updated_at: string | null
           username: string | null
         }
@@ -212,6 +213,7 @@ export type Database = {
           avatar_url?: string | null
           full_name?: string | null
           id: string
+          mobile?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -219,6 +221,7 @@ export type Database = {
           avatar_url?: string | null
           full_name?: string | null
           id?: string
+          mobile?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -361,11 +364,64 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawals: {
+        Row: {
+          created_at: string | null
+          currency: string
+          external_ref: string | null
+          fee_amount: number
+          gross_amount: number
+          id: string
+          mobile_number: string
+          net_amount: number
+          provider: string
+          status: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string
+          external_ref?: string | null
+          fee_amount: number
+          gross_amount: number
+          id?: string
+          mobile_number: string
+          net_amount: number
+          provider?: string
+          status?: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string
+          external_ref?: string | null
+          fee_amount?: number
+          gross_amount?: number
+          id?: string
+          mobile_number?: string
+          net_amount?: number
+          provider?: string
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      credit_wallet: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
+      debit_wallet_if_enough: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
