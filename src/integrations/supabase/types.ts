@@ -230,6 +230,33 @@ export type Database = {
         }
         Relationships: []
       }
+      tiers: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json
+          id: string
+          name: string
+          price_usd: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features: Json
+          id?: string
+          name: string
+          price_usd: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json
+          id?: string
+          name?: string
+          price_usd?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -250,6 +277,57 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          auto_renew: boolean | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          started_at: string
+          status: string
+          tier_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status: string
+          tier_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_renew?: boolean | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string
+          status?: string
+          tier_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_subscriptions_tier_id_fkey"
+            columns: ["tier_id"]
+            isOneToOne: false
+            referencedRelation: "tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       volunteer_applications: {
         Row: {
@@ -366,6 +444,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      withdraw_skips: {
+        Row: {
+          created_at: string
+          id: string
+          limit_per_month: number
+          month: string
+          skips_used: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          limit_per_month?: number
+          month: string
+          skips_used?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          limit_per_month?: number
+          month?: string
+          skips_used?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdraw_skips_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       withdrawals: {
         Row: {
