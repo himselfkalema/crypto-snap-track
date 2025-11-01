@@ -1,13 +1,17 @@
 import { serve } from "https://deno.land/std@0.201.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { 
-  auth: { persistSession: false } 
-});
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
+// Provider configurations
 const PROVIDER_CONFIG = {
   MTN: {
     baseUrl: Deno.env.get("MTN_BASE_URL"),
@@ -26,251 +30,248 @@ const PROVIDER_CONFIG = {
   },
 };
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// Input validation schema
+const withdrawSchema = z.object({
+  gross_amount: z.number()
+    .positive({ message: 'Amount must be positive' })
+    .max(10000000, { message: 'Maximum withdrawal is 10,000,000 UGX' })
+    .multipleOf(0.01, { message: 'Maximum 2 decimal places' })
+});
 
-// --- MTN Helpers ---
-async function getMtnToken(config: any) {
-  console.log("Getting MTN token...");
-  const res = await fetch(`${config.baseUrl}/disbursement/token/`, {
+async function getMtnToken(cfg: any) {
+  const res = await fetch(`${cfg.baseUrl}/disbursement/token/`, {
     method: "POST",
     headers: {
-      Authorization: "Basic " + btoa(`${config.userId}:${config.apiKey}`),
-      "Ocp-Apim-Subscription-Key": config.subsKey,
+      Authorization: "Basic " + btoa(`${cfg.userId}:${cfg.apiKey}`),
+      "Ocp-Apim-Subscription-Key": cfg.subsKey,
       "Content-Type": "application/x-www-form-urlencoded",
     },
     body: "grant_type=client_credentials",
   });
-  
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`MTN token failed: ${text}`);
-  }
-  
+  if (!res.ok) throw new Error('MTN token request failed');
   const j = await res.json();
-  console.log("MTN token obtained");
   return j.access_token;
 }
 
-async function mtnTransfer(config: any, externalRef: string, phone: string, amount: number) {
-  console.log(`Initiating MTN transfer: ${amount} UGX to ${phone}`);
-  const token = await getMtnToken(config);
-  
+async function mtnTransfer(cfg: any, externalRef: string, phone: string, amount: number) {
+  const token = await getMtnToken(cfg);
   const body = {
     amount: String(amount),
     currency: "UGX",
     externalId: externalRef,
     payee: { partyIdType: "MSISDN", partyId: phone },
     payerMessage: "Wallet withdrawal",
-    payeeNote: "Withdrawal from platform",
+    payeeNote: "Withdrawal from CryptoSnapTrack",
   };
-  
-  const res = await fetch(`${config.baseUrl}/disbursement/v1_0/transfer`, {
+  const res = await fetch(`${cfg.baseUrl}/disbursement/v1_0/transfer`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
       "X-Reference-Id": externalRef,
-      "X-Target-Environment": config.targetEnv,
-      "Ocp-Apim-Subscription-Key": config.subsKey,
+      "X-Target-Environment": cfg.targetEnv,
+      "Ocp-Apim-Subscription-Key": cfg.subsKey,
       "Content-Type": "application/json",
-      "X-Callback-Url": config.callbackUrl,
+      "X-Callback-Url": cfg.callbackUrl,
     },
     body: JSON.stringify(body),
   });
-  
   if (![200, 202].includes(res.status)) {
-    const text = await res.text();
-    console.error(`MTN transfer failed: ${text}`);
-    throw new Error(`MTN transfer failed: ${text}`);
+    console.error('MTN transfer failed:', await res.text());
+    throw new Error('Payment provider error');
   }
-  
-  console.log(`MTN transfer initiated successfully: ${res.status}`);
   return res.status;
 }
 
-// --- Airtel Helpers ---
-async function airtelGetToken(config: any) {
-  console.log("Getting Airtel token...");
-  const res = await fetch(`${config.baseUrl}/auth/oauth2/token`, {
+async function airtelGetToken(cfg: any) {
+  const res = await fetch(`${cfg.baseUrl}/auth/oauth2/token`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: `client_id=${config.clientId}&client_secret=${config.clientSecret}&grant_type=client_credentials`,
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: `client_id=${cfg.clientId}&client_secret=${cfg.clientSecret}&grant_type=client_credentials`,
   });
-  
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Airtel token failed: ${text}`);
-  }
-  
+  if (!res.ok) throw new Error('Airtel token request failed');
   const j = await res.json();
-  console.log("Airtel token obtained");
   return j.access_token;
 }
 
-async function airtelTransfer(config: any, externalRef: string, phone: string, amount: number) {
-  console.log(`Initiating Airtel transfer: ${amount} UGX to ${phone}`);
-  const token = await airtelGetToken(config);
-  
+async function airtelTransfer(cfg: any, externalRef: string, phone: string, amount: number) {
+  const token = await airtelGetToken(cfg);
   const body = {
     amount: String(amount),
     currency: "UGX",
     externalId: externalRef,
     payee: { partyIdType: "MSISDN", partyId: phone },
     payerMessage: "Wallet withdrawal",
-    payeeNote: "Withdrawal from platform",
+    payeeNote: "Withdrawal from CryptoSnapTrack",
   };
-  
-  const res = await fetch(`${config.baseUrl}/merchant/v1/payments`, {
+  const res = await fetch(`${cfg.baseUrl}/merchant/v1/payments`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "X-Reference-Id": externalRef,
+    headers: { 
+      Authorization: `Bearer ${token}`, 
       "Content-Type": "application/json",
+      "X-Callback-Url": cfg.callbackUrl,
     },
     body: JSON.stringify(body),
   });
-  
   if (![200, 202].includes(res.status)) {
-    const text = await res.text();
-    console.error(`Airtel transfer failed: ${text}`);
-    throw new Error(`Airtel transfer failed: ${text}`);
+    console.error('Airtel transfer failed:', await res.text());
+    throw new Error('Payment provider error');
   }
-  
-  console.log(`Airtel transfer initiated successfully: ${res.status}`);
   return res.status;
 }
 
-// --- Main Server ---
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const url = new URL(req.url);
-
-    // POST /withdraw
-    if (url.pathname.endsWith("/withdraw") && req.method === "POST") {
-      const { user_id, gross_amount } = await req.json();
-      console.log(`Withdrawal request: user=${user_id}, amount=${gross_amount}`);
-      
-      if (!user_id || !gross_amount) {
-        return new Response(
-          JSON.stringify({ error: "user_id and gross_amount required" }), 
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Load profile & provider
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("mobile, provider")
-        .eq("id", user_id)
-        .single();
-        
-      if (profileError || !profile?.mobile || !profile.provider) {
-        console.error("Profile error:", profileError);
-        return new Response(
-          JSON.stringify({ error: "Profile missing mobile or provider" }), 
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      console.log(`User profile: mobile=${profile.mobile}, provider=${profile.provider}`);
-
-      const fee = Number((gross_amount * 0.35).toFixed(2));
-      const net = Number((gross_amount - fee).toFixed(2));
-
-      // Debit wallet
-      const { data: debitOk, error: debitError } = await supabase.rpc(
-        "debit_wallet_if_enough", 
-        { p_user_id: user_id, p_amount: gross_amount }
-      );
-      
-      if (debitError) {
-        console.error("Debit error:", debitError);
-        return new Response(
-          JSON.stringify({ error: "Wallet debit failed: " + debitError.message }), 
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-      
-      if (!debitOk) {
-        console.log("Insufficient funds");
-        return new Response(
-          JSON.stringify({ error: "Insufficient funds" }), 
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      const externalRef = crypto.randomUUID();
-      const { data: withdrawRow, error: insertError } = await supabase
-        .from("withdrawals")
-        .insert([{
-          user_id,
-          gross_amount,
-          fee_amount: fee,
-          net_amount: net,
-          currency: 'UGX',
-          mobile_number: profile.mobile,
-          provider: profile.provider.toUpperCase(),
-          status: 'PROCESSING',
-          external_ref: externalRef
-        }])
-        .select()
-        .single();
-
-      if (insertError || !withdrawRow) {
-        console.error("Insert withdrawal error:", insertError);
-        // Refund
-        await supabase.rpc("credit_wallet", { p_user_id: user_id, p_amount: gross_amount });
-        return new Response(
-          JSON.stringify({ error: "Failed to create withdrawal record" }), 
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      console.log(`Withdrawal record created: ${withdrawRow.id}`);
-
-      try {
-        const provider = profile.provider.toUpperCase();
-        
-        if (provider === "MTN") {
-          await mtnTransfer(PROVIDER_CONFIG.MTN, externalRef, profile.mobile, net);
-        } else if (provider === "AIRTEL") {
-          await airtelTransfer(PROVIDER_CONFIG.AIRTEL, externalRef, profile.mobile, net);
-        } else {
-          throw new Error("Unsupported provider: " + provider);
-        }
-
-        console.log(`Withdrawal initiated successfully for ${provider}`);
-        return new Response(
-          JSON.stringify({ success: true, withdrawal: withdrawRow }), 
-          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } catch (err) {
-        console.error("Provider transfer error:", err);
-        // Rollback
-        await supabase.rpc("credit_wallet", { p_user_id: user_id, p_amount: gross_amount });
-        await supabase.from("withdrawals").update({ status: 'FAILED' }).eq('id', withdrawRow.id);
-        
-        return new Response(
-          JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), 
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+    // Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), 
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    return new Response("Not Found", { status: 404, headers: corsHeaders });
-  } catch (err) {
-    console.error("Withdraw function error:", err);
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }), 
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), 
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Parse and validate request body
+    const body = await req.json();
+    const validated = withdrawSchema.parse(body);
+    const { gross_amount } = validated;
+    
+    // Always use authenticated user's ID (not from request body)
+    const user_id = user.id;
+
+    // Load user profile
+    const { data: profile, error: profErr } = await supabase
+      .from("profiles")
+      .select("mobile, provider, withdraw_skips_used, withdraw_skips_limit, subscription_tier")
+      .eq("id", user_id)
+      .single();
+
+    if (profErr || !profile) {
+      console.error('Profile error:', profErr);
+      return new Response(JSON.stringify({ error: 'Profile not found. Please complete your profile.' }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    if (!profile.mobile) {
+      return new Response(JSON.stringify({ error: 'Please add a mobile number to your profile.' }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    const provider = (profile.provider || 'MTN').toUpperCase();
+    const fee = Number((Number(gross_amount) * 0.35).toFixed(2));
+    const net = Number((Number(gross_amount) - fee).toFixed(2));
+
+    // Check withdraw skips for premium users
+    let skipUsed = false;
+    if (profile.subscription_tier === 'premium' && profile.withdraw_skips_used < (profile.withdraw_skips_limit || 5)) {
+      skipUsed = true;
+    }
+
+    // Debit wallet
+    const { data: debitOk, error: debitErr } = await supabase.rpc('debit_wallet_if_enough', { 
+      p_user_id: user_id, 
+      p_amount: gross_amount 
+    });
+
+    if (debitErr) {
+      console.error('Debit error:', debitErr);
+      return new Response(JSON.stringify({ error: 'Transaction failed. Please try again.' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    if (!debitOk) {
+      return new Response(JSON.stringify({ error: 'Insufficient balance for this transaction' }), 
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Generate unique external reference
+    const externalRef = crypto.randomUUID();
+
+    // Create withdrawal record
+    const { data: withdrawRow, error: insertErr } = await supabase
+      .from('withdrawals')
+      .insert([{
+        user_id,
+        gross_amount,
+        fee_amount: fee,
+        net_amount: net,
+        currency: 'UGX',
+        mobile_number: profile.mobile,
+        provider: provider,
+        status: 'PROCESSING',
+        external_ref: externalRef
+      }])
+      .select()
+      .single();
+
+    if (insertErr) {
+      console.error('Insert error:', insertErr);
+      // Rollback: refund wallet
+      await supabase.rpc('credit_wallet', { p_user_id: user_id, p_amount: gross_amount });
+      return new Response(JSON.stringify({ error: 'Transaction failed. Please try again.' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Call provider API
+    try {
+      if (provider === 'MTN') {
+        await mtnTransfer(PROVIDER_CONFIG.MTN, externalRef, profile.mobile, net);
+      } else if (provider === 'AIRTEL') {
+        await airtelTransfer(PROVIDER_CONFIG.AIRTEL, externalRef, profile.mobile, net);
+      } else {
+        throw new Error('Unsupported provider');
+      }
+
+      // Increment withdraw skip usage for premium
+      if (skipUsed) {
+        await supabase
+          .from('profiles')
+          .update({ withdraw_skips_used: (profile.withdraw_skips_used || 0) + 1 })
+          .eq('id', user_id);
+      }
+
+      // Log audit event
+      await supabase.rpc('log_audit', {
+        p_user_id: user_id,
+        p_action: 'WITHDRAWAL_INITIATED',
+        p_details: { withdrawal_id: withdrawRow.id, amount: gross_amount, provider }
+      });
+
+      return new Response(JSON.stringify({ success: true, withdrawal: withdrawRow }), 
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+
+    } catch (provErr) {
+      console.error('Provider error:', provErr);
+      // Rollback: mark failed and refund
+      await supabase.from('withdrawals').update({ status: 'FAILED' }).eq('id', withdrawRow.id);
+      await supabase.rpc('credit_wallet', { p_user_id: user_id, p_amount: gross_amount });
+      
+      return new Response(JSON.stringify({ error: 'Payment provider temporarily unavailable' }), 
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      console.error('Validation error:', err);
+      return new Response(JSON.stringify({ 
+        error: 'Validation failed', 
+        details: err.errors 
+      }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+    
+    console.error('Withdraw function error:', err);
+    return new Response(JSON.stringify({ error: 'An error occurred. Please contact support.' }), 
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

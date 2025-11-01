@@ -1,170 +1,174 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.201.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Validation schemas
+const requestSchema = z.object({
+  phone_number: z.string().regex(/^256\d{9}$/, { message: 'Phone must be 256XXXXXXXXX format' }),
+  amount: z.number().positive().max(5000000, { message: 'Maximum amount is 5,000,000 UGX' }),
+  provider: z.enum(['MTN', 'AIRTEL'])
+});
+
+const callbackSchema = z.object({
+  external_tx_id: z.string(),
+  status: z.string()
+});
+
 serve(async (req) => {
-  // Handle CORS preflight requests
+  const url = new URL(req.url);
+
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const url = new URL(req.url);
-  console.log('Mobile money function called:', url.pathname);
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    { auth: { persistSession: false } }
-  );
-
   try {
-    // 1️⃣ Request a mobile money payment
+    // /request endpoint - requires authentication (SECURITY FIX)
     if (url.pathname.endsWith("/request") && req.method === "POST") {
-      const { user_id, phone_number, amount, provider } = await req.json();
-
-      console.log('Mobile money request:', { user_id, phone_number, amount, provider });
-
-      if (!user_id || !phone_number || !amount) {
-        return new Response(
-          JSON.stringify({ error: "Missing required parameters" }), 
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      // Authentication check
+      const authHeader = req.headers.get('Authorization');
+      if (!authHeader) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), 
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
-      // 🔑 Here you would call MTN MoMo or Airtel Money API
-      // For now, we'll simulate with a random external transaction ID
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+      if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), 
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+
+      // Parse and validate request
+      const body = await req.json();
+      const validated = requestSchema.parse(body);
+      const { phone_number, amount, provider } = validated;
+      
+      // Always use authenticated user's ID (SECURITY FIX)
+      const user_id = user.id;
+
       const external_tx_id = crypto.randomUUID();
 
-      console.log('Generated external_tx_id:', external_tx_id);
+      // Insert transaction record
+      const { data: tx, error: txErr } = await supabase
+        .from('mobile_money_transactions')
+        .insert([{
+          user_id,
+          phone_number,
+          amount,
+          provider: provider.toUpperCase(),
+          external_tx_id,
+          status: 'PENDING',
+          currency: 'UGX'
+        }])
+        .select()
+        .single();
 
-      // Save transaction in DB as PENDING
-      const { error } = await supabase.from("mobile_money_transactions").insert([{
-        user_id,
-        phone_number,
-        amount,
-        provider,
-        external_tx_id,
-        status: "PENDING",
-        currency: "UGX"
-      }]);
-
-      if (error) {
-        console.error('Error creating transaction:', error);
-        throw error;
+      if (txErr) {
+        console.error('Transaction insert error:', txErr);
+        return new Response(JSON.stringify({ error: 'Transaction failed' }), 
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
-      console.log('Mobile money request created successfully');
+      // Log audit event
+      await supabase.rpc('log_audit', {
+        p_user_id: user_id,
+        p_action: 'MOBILE_MONEY_REQUEST_CREATED',
+        p_details: { transaction_id: tx.id, amount, provider }
+      });
 
-      return new Response(
-        JSON.stringify({ success: true, external_tx_id }), 
-        {
-          status: 200,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
+      return new Response(JSON.stringify({ 
+        success: true, 
+        transaction: tx,
+        message: 'Payment request created. Please complete payment on your phone.' 
+      }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // 2️⃣ Callback webhook (telco confirms payment)
+    // /callback endpoint - for provider webhooks (no auth required)
     if (url.pathname.endsWith("/callback") && req.method === "POST") {
       const body = await req.json();
-      const { external_tx_id, status } = body;
+      const validated = callbackSchema.parse(body);
+      const { external_tx_id, status } = validated;
 
-      console.log('Mobile money callback received:', { external_tx_id, status });
-
-      // Update transaction status in DB
-      const { data, error } = await supabase
-        .from("mobile_money_transactions")
-        .update({ status })
-        .eq("external_tx_id", external_tx_id)
-        .select()
+      // Fetch transaction
+      const { data: tx, error: txErr } = await supabase
+        .from('mobile_money_transactions')
+        .select('*')
+        .eq('external_tx_id', external_tx_id)
         .single();
 
-      if (error) {
-        console.error('Error updating transaction:', error);
-        throw error;
+      if (txErr || !tx) {
+        console.error('Transaction not found:', external_tx_id);
+        return new Response(JSON.stringify({ error: 'Transaction not found' }), 
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
 
-      console.log('Transaction updated:', data);
+      // Idempotency: if already processed, return success
+      if (tx.status === 'COMPLETED' || tx.status === 'FAILED') {
+        return new Response(JSON.stringify({ success: true, message: 'Already processed' }), 
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
 
-      // If payment SUCCESS → increment wallet
-      if (status === "SUCCESS" && data) {
-        console.log('Incrementing wallet balance for user:', data.user_id);
-        
-        const { error: rpcError } = await supabase.rpc("increment_wallet_balance", {
-          p_user_id: data.user_id,
-          p_amount: data.amount,
+      // Normalize status
+      let normalizedStatus = status.toUpperCase();
+      if (['SUCCESS', 'COMPLETED', 'SUCCESSFUL'].includes(normalizedStatus)) {
+        normalizedStatus = 'COMPLETED';
+      } else if (['FAILED', 'REJECTED', 'ERROR'].includes(normalizedStatus)) {
+        normalizedStatus = 'FAILED';
+      } else {
+        normalizedStatus = 'PROCESSING';
+      }
+
+      // Update transaction status
+      await supabase
+        .from('mobile_money_transactions')
+        .update({ status: normalizedStatus })
+        .eq('id', tx.id);
+
+      // If successful, credit wallet
+      if (normalizedStatus === 'COMPLETED') {
+        await supabase.rpc('credit_wallet', { 
+          p_user_id: tx.user_id, 
+          p_amount: tx.amount 
         });
 
-        if (rpcError) {
-          console.error('Error incrementing wallet:', rpcError);
-          throw rpcError;
-        }
-
-        console.log('Wallet balance incremented successfully');
-      }
-
-      return new Response(
-        JSON.stringify({ received: true }), 
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // 3️⃣ Simulate payment completion (for testing purposes)
-    if (url.pathname.endsWith("/simulate-success") && req.method === "POST") {
-      const { external_tx_id } = await req.json();
-
-      console.log('Simulating payment success for:', external_tx_id);
-
-      if (!external_tx_id) {
-        return new Response(
-          JSON.stringify({ error: "Missing external_tx_id" }), 
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Update transaction status to SUCCESS
-      const { data, error } = await supabase
-        .from("mobile_money_transactions")
-        .update({ status: "SUCCESS" })
-        .eq("external_tx_id", external_tx_id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Error updating transaction:', error);
-        throw error;
-      }
-
-      // Increment wallet balance
-      if (data) {
-        const { error: rpcError } = await supabase.rpc("increment_wallet_balance", {
-          p_user_id: data.user_id,
-          p_amount: data.amount,
+        // Log audit event
+        await supabase.rpc('log_audit', {
+          p_user_id: tx.user_id,
+          p_action: 'WALLET_CREDITED_MOBILE_MONEY',
+          p_details: { transaction_id: tx.id, amount: tx.amount, provider: tx.provider }
         });
-
-        if (rpcError) {
-          console.error('Error incrementing wallet:', rpcError);
-          throw rpcError;
-        }
       }
 
-      return new Response(
-        JSON.stringify({ success: true }), 
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ success: true }), 
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    return new Response("Not Found", { status: 404, headers: corsHeaders });
-  } catch (err) {
-    console.error("Mobile Money Error:", err);
-    const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-    return new Response(
-      JSON.stringify({ error: errorMessage }), 
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // SECURITY FIX: /simulate-success endpoint REMOVED from production
+    // This was a critical vulnerability allowing free money generation
+
+    return new Response('Not Found', { status: 404, headers: corsHeaders });
+
+  } catch (err: any) {
+    if (err instanceof z.ZodError) {
+      return new Response(JSON.stringify({ 
+        error: 'Validation failed', 
+        details: err.errors 
+      }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    console.error('Mobile money function error:', err);
+    return new Response(JSON.stringify({ error: 'An error occurred' }), 
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });

@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deposits: {
         Row: {
           amount: number
@@ -103,6 +138,44 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      lightning_invoices: {
+        Row: {
+          amount_sat: number
+          created_at: string | null
+          id: string
+          lndhub_invoice_id: string | null
+          payment_request: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount_sat: number
+          created_at?: string | null
+          id?: string
+          lndhub_invoice_id?: string | null
+          payment_request?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount_sat?: number
+          created_at?: string | null
+          id?: string
+          lndhub_invoice_id?: string | null
+          payment_request?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lightning_invoices_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mobile_money_transactions: {
         Row: {
@@ -207,8 +280,11 @@ export type Database = {
           id: string
           mobile: string | null
           provider: string | null
+          subscription_tier: string | null
           updated_at: string | null
           username: string | null
+          withdraw_skips_limit: number | null
+          withdraw_skips_used: number | null
         }
         Insert: {
           avatar_url?: string | null
@@ -216,8 +292,11 @@ export type Database = {
           id: string
           mobile?: string | null
           provider?: string | null
+          subscription_tier?: string | null
           updated_at?: string | null
           username?: string | null
+          withdraw_skips_limit?: number | null
+          withdraw_skips_used?: number | null
         }
         Update: {
           avatar_url?: string | null
@@ -225,8 +304,11 @@ export type Database = {
           id?: string
           mobile?: string | null
           provider?: string | null
+          subscription_tier?: string | null
           updated_at?: string | null
           username?: string | null
+          withdraw_skips_limit?: number | null
+          withdraw_skips_used?: number | null
         }
         Relationships: []
       }
@@ -547,6 +629,15 @@ export type Database = {
       }
       increment_wallet_balance: {
         Args: { p_amount: number; p_user_id: string }
+        Returns: undefined
+      }
+      log_audit: {
+        Args: {
+          p_action: string
+          p_details?: Json
+          p_ip_address?: string
+          p_user_id: string
+        }
         Returns: undefined
       }
     }

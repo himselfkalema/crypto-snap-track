@@ -10,9 +10,10 @@ verify_jwt = true
 verify_jwt = false
 
 [functions.admin-deposits]
+verify_jwt = true
 
 [functions.withdraw]
-verify_jwt = false
+verify_jwt = true
 
 [functions.disbursement-callback]
 verify_jwt = false
