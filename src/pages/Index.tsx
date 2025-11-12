@@ -4,6 +4,7 @@ import { PortfolioSummary } from "@/components/crypto/PortfolioSummary";
 import { PositionCard } from "@/components/crypto/PositionCard";
 import { AddPositionForm } from "@/components/crypto/AddPositionForm";
 import { MarketMovers } from "@/components/crypto/MarketMovers";
+import MarketOverview from "@/components/crypto/MarketOverview";
 import { QuickActions } from "@/components/crypto/QuickActions";
 import { InfoPanel } from "@/components/crypto/InfoPanel";
 import { Card } from "@/components/ui/card";
@@ -142,6 +143,8 @@ const Index = () => {
               onResetPortfolio={resetPortfolio}
               onRefreshData={refreshData}
             />
+
+            <MarketOverview />
 
             <InfoPanel />
           </div>
