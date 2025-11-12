@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Wallet, TrendingUp, LogOut, User } from "lucide-react";
 import { Navigate, Link } from "react-router-dom";
 
-const Index = () => {
+const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
   
   const {
@@ -40,9 +40,9 @@ const Index = () => {
     );
   }
 
-  // Redirect to auth if not logged in
+  // Redirect to landing if not logged in
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return (
@@ -170,4 +170,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Dashboard;
