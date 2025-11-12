@@ -177,6 +177,30 @@ export type Database = {
           },
         ]
       }
+      market_preferences: {
+        Row: {
+          created_at: string
+          id: string
+          preferred_symbols: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          preferred_symbols?: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          preferred_symbols?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       mobile_money_transactions: {
         Row: {
           amount: number
