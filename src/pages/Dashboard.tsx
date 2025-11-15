@@ -71,7 +71,13 @@ const Dashboard = () => {
                             Wallet
                           </Button>
                         </Link>
-                        <Button onClick={signOut} variant="ghost" size="sm" className="ml-2">
+                        <Link to="/subscription">
+                          <Button variant="outline" size="sm">
+                            <TrendingUp className="h-4 w-4 mr-1" />
+                            Subscription
+                          </Button>
+                        </Link>
+                        <Button onClick={signOut} variant="ghost" size="sm">
                           <LogOut className="h-4 w-4 mr-1" />
                           Sign Out
                         </Button>
