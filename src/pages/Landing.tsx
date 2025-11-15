@@ -85,10 +85,10 @@ export default function Landing() {
             Get Started
           </button>
           <button
-            onClick={handleAuth}
+            onClick={() => navigate("/pricing")}
             className="px-6 py-3 bg-secondary text-secondary-foreground rounded-xl hover:bg-secondary/80 transition-colors"
           >
-            Log In
+            View Pricing
           </button>
         </div>
       </section>
@@ -139,8 +139,17 @@ export default function Landing() {
             <li>NFT Tracker Lite</li>
           </ul>
           <div className="mt-4 text-primary font-semibold text-xl">$24/month</div>
+          <button
+            onClick={() => navigate("/pricing")}
+            className="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Subscribe
+          </button>
         </div>
-        <div className="bg-card border border-primary/50 p-6 rounded-2xl shadow-glow">
+        <div className="bg-card border border-primary/50 p-6 rounded-2xl shadow-glow relative">
+          <div className="absolute -top-3 right-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-bold">
+            Popular
+          </div>
           <h3 className="text-2xl font-bold mb-3 text-primary">🥇 Premium Tier</h3>
           <ul className="text-muted-foreground list-disc pl-6 space-y-1">
             <li>AI Portfolio Advisor & Predictive Analytics</li>
@@ -149,6 +158,12 @@ export default function Landing() {
             <li>Withdraw Skips (Instant, up to 5/month)</li>
           </ul>
           <div className="mt-4 text-primary font-semibold text-xl">$85/month</div>
+          <button
+            onClick={() => navigate("/pricing")}
+            className="mt-4 w-full px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-colors"
+          >
+            Subscribe
+          </button>
         </div>
       </section>
 
