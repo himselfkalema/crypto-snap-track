@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Wallet from "./pages/Wallet";
 import Admin from "./pages/Admin";
 import Pricing from "./pages/Pricing";
+import SubscriptionManagement from "./pages/SubscriptionManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/wallet" element={<Wallet />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/subscription" element={<SubscriptionManagement />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
