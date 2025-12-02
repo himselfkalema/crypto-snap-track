@@ -4,11 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { PortfolioSummary } from "@/components/crypto/PortfolioSummary";
 import { PositionCard } from "@/components/crypto/PositionCard";
-import { AddPositionForm } from "@/components/crypto/AddPositionForm";
 import { MarketMovers } from "@/components/crypto/MarketMovers";
-import MarketOverview from "@/components/crypto/MarketOverview";
-import { QuickActions } from "@/components/crypto/QuickActions";
-import { InfoPanel } from "@/components/crypto/InfoPanel";
+import { DashboardSidebar } from "@/components/crypto/DashboardSidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, Wallet, TrendingUp, LogOut, User, Banknote } from "lucide-react";
@@ -74,10 +71,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20">
-      <div className="container max-w-7xl mx-auto p-6">
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+      <div className="container max-w-5xl mx-auto p-6">
+        <div className="space-y-6">
             {/* Header */}
             {/* Wallet Balance Card */}
             <Card className="p-6 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-primary/30 backdrop-blur-glass shadow-card">
@@ -181,27 +176,8 @@ const Dashboard = () => {
               </div>
             </Card>
 
-            {/* Market Movers */}
-            <MarketMovers coins={coins} />
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            <AddPositionForm
-              coins={coins}
-              onAddPosition={addPosition}
-              error={error || undefined}
-            />
-
-            <QuickActions
-              onResetPortfolio={resetPortfolio}
-              onRefreshData={refreshData}
-            />
-
-            <MarketOverview />
-
-            <InfoPanel />
-          </div>
+          {/* Market Movers */}
+          <MarketMovers coins={coins} />
         </div>
 
         {/* Footer */}
@@ -220,6 +196,15 @@ const Dashboard = () => {
           </div>
         </footer>
       </div>
+
+      {/* Floating Sidebar */}
+      <DashboardSidebar
+        coins={coins}
+        onAddPosition={addPosition}
+        onResetPortfolio={resetPortfolio}
+        onRefreshData={refreshData}
+        error={error || undefined}
+      />
     </div>
   );
 };
