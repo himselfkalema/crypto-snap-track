@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { useCryptoData } from "@/hooks/useCryptoData";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { PortfolioSummary } from "@/components/crypto/PortfolioSummary";
 import { PositionCard } from "@/components/crypto/PositionCard";
 import { AddPositionForm } from "@/components/crypto/AddPositionForm";
@@ -9,11 +11,17 @@ import { QuickActions } from "@/components/crypto/QuickActions";
 import { InfoPanel } from "@/components/crypto/InfoPanel";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Wallet, TrendingUp, LogOut, User } from "lucide-react";
+import { Loader2, Wallet, TrendingUp, LogOut, User, Banknote } from "lucide-react";
 import { Navigate, Link } from "react-router-dom";
+
+interface WalletData {
+  balance: number;
+  currency: string;
+}
 
 const Dashboard = () => {
   const { user, loading: authLoading, signOut } = useAuth();
+  const [walletData, setWalletData] = useState<WalletData | null>(null);
   
   const {
     coins,
@@ -27,6 +35,25 @@ const Dashboard = () => {
     resetPortfolio,
     refreshData,
   } = useCryptoData(user?.id);
+
+  // Fetch wallet balance
+  useEffect(() => {
+    if (!user?.id) return;
+    
+    const fetchWallet = async () => {
+      const { data } = await supabase
+        .from('wallets')
+        .select('balance, currency')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (data) {
+        setWalletData(data);
+      }
+    };
+    
+    fetchWallet();
+  }, [user?.id]);
 
   // Show loading while checking auth
   if (authLoading) {
@@ -52,6 +79,33 @@ const Dashboard = () => {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
             {/* Header */}
+            {/* Wallet Balance Card */}
+            <Card className="p-6 bg-gradient-to-r from-primary/20 via-primary/10 to-transparent border-primary/30 backdrop-blur-glass shadow-card">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-primary/20 border border-primary/30">
+                    <Banknote className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground font-medium">Wallet Balance</p>
+                    <p className="text-3xl font-bold text-foreground">
+                      {walletData 
+                        ? `${walletData.balance.toLocaleString()} ${walletData.currency}`
+                        : '0 UGX'
+                      }
+                    </p>
+                  </div>
+                </div>
+                <Link to="/wallet">
+                  <Button variant="default" size="sm">
+                    <Wallet className="h-4 w-4 mr-2" />
+                    Manage Wallet
+                  </Button>
+                </Link>
+              </div>
+            </Card>
+
+            {/* Header */}
             <Card className="p-6 bg-gradient-card border-border/50 backdrop-blur-glass shadow-card">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
@@ -65,14 +119,8 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2 mt-2">
                         <User className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm text-muted-foreground">{user.email}</span>
-                        <Link to="/wallet">
-                          <Button variant="outline" size="sm" className="ml-2">
-                            <Wallet className="h-4 w-4 mr-1" />
-                            Wallet
-                          </Button>
-                        </Link>
                         <Link to="/subscription">
-                          <Button variant="outline" size="sm">
+                          <Button variant="outline" size="sm" className="ml-2">
                             <TrendingUp className="h-4 w-4 mr-1" />
                             Subscription
                           </Button>
