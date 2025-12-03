@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.201.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { decode } from "https://deno.land/x/djwt@v3.0.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,21 +26,26 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Extract JWT token
+    // Extract and decode JWT token (already verified by Supabase gateway since verify_jwt=true)
     const token = authHeader.replace('Bearer ', '');
-
-    // Create service role client for admin operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    );
-
-    // Verify the JWT token and get user
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-
-    if (authError || !user) {
-      console.error('Auth error:', authError);
+    
+    let user_id: string;
+    try {
+      const [_header, payload, _signature] = decode(token);
+      const claims = payload as { sub?: string; exp?: number };
+      
+      if (!claims.sub) {
+        throw new Error('Invalid token: missing sub claim');
+      }
+      
+      // Check if token is expired
+      if (claims.exp && claims.exp * 1000 < Date.now()) {
+        throw new Error('Token expired');
+      }
+      
+      user_id = claims.sub;
+    } catch (decodeError) {
+      console.error('Token decode error:', decodeError);
       return new Response(JSON.stringify({ success: false, error: 'Invalid authentication' }), 
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
@@ -48,7 +54,13 @@ serve(async (req) => {
     const body = await req.json();
     const validated = topupSchema.parse(body);
     const { amount, phone } = validated;
-    const user_id = user.id;
+
+    // Create service role client for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    );
 
     // Validate phone belongs to user if provided
     if (phone) {
