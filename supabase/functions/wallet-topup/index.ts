@@ -20,24 +20,23 @@ serve(async (req) => {
   try {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), 
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Create client with user's auth context
-    const supabaseClient = createClient(
+    // Extract JWT token
+    const token = authHeader.replace('Bearer ', '');
+
+    // Create service role client for admin operations
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-      }
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
     );
 
-    // Get authenticated user
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Verify the JWT token and get user
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       console.error('Auth error:', authError);
@@ -50,13 +49,6 @@ serve(async (req) => {
     const validated = topupSchema.parse(body);
     const { amount, phone } = validated;
     const user_id = user.id;
-
-    // Create service role client for privileged operations
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      { auth: { persistSession: false } }
-    );
 
     // Validate phone belongs to user if provided
     if (phone) {
@@ -74,7 +66,7 @@ serve(async (req) => {
       }
     }
 
-    // Credit wallet using service role client
+    // Credit wallet
     const { error: creditError } = await supabaseAdmin.rpc('credit_wallet', { 
       p_user_id: user_id, 
       p_amount: amount 
