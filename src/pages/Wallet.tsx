@@ -11,7 +11,7 @@ import { Navigate } from "react-router-dom";
 import { Wallet, Plus, History, DollarSign, Loader2, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import MobileMoneyTopup from "@/components/MobileMoneyTopup";
-
+import WithdrawForm from "@/components/WithdrawForm";
 interface WalletData {
   id: string;
   balance: number;
@@ -367,12 +367,41 @@ const WalletPage = () => {
           </Card>
         </div>
 
-        {/* Mobile Money Top-up */}
-        <div className="mt-6">
+        {/* Mobile Money Top-up & Withdraw */}
+        <div className="mt-6 grid md:grid-cols-2 gap-6">
           <MobileMoneyTopup 
             userId={user.id} 
             onSuccess={() => {
               // Refresh wallet and transactions after successful topup
+              if (wallet) {
+                supabase
+                  .from("wallets")
+                  .select("*")
+                  .eq("user_id", user.id)
+                  .eq("currency", "UGX")
+                  .single()
+                  .then(({ data }) => {
+                    if (data) setWallet(data);
+                  });
+              }
+              
+              supabase
+                .from("wallet_transactions")
+                .select("*")
+                .eq("user_id", user.id)
+                .order("created_at", { ascending: false })
+                .limit(10)
+                .then(({ data }) => {
+                  if (data) setTransactions(data);
+                });
+            }}
+          />
+
+          <WithdrawForm 
+            userId={user.id}
+            walletBalance={wallet?.balance || 0}
+            onSuccess={() => {
+              // Refresh wallet and transactions after successful withdrawal
               if (wallet) {
                 supabase
                   .from("wallets")
