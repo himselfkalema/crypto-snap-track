@@ -2,10 +2,6 @@ import { serve } from "https://deno.land/std@0.201.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false } });
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -22,38 +18,55 @@ serve(async (req) => {
   }
 
   try {
-    // Authentication required (SECURITY FIX)
+    // Get authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), 
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    // Create client with user's auth context
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: authHeader },
+        },
+      }
+    );
+
+    // Get authenticated user
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
 
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(JSON.stringify({ success: false, error: 'Invalid authentication' }), 
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Parse and validate request - NEVER accept user_id from body (SECURITY FIX)
+    // Parse and validate request
     const body = await req.json();
     const validated = topupSchema.parse(body);
     const { amount, phone } = validated;
-    
-    // Always use authenticated user's ID (SECURITY FIX)
     const user_id = user.id;
 
-    // Validate phone belongs to user if provided (SECURITY FIX)
+    // Create service role client for privileged operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    );
+
+    // Validate phone belongs to user if provided
     if (phone) {
-      const { data: profile } = await supabase
+      const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('mobile')
         .eq('id', user_id)
         .single();
 
-      if (phone && profile?.mobile !== phone) {
+      if (profile?.mobile && profile.mobile !== phone) {
         return new Response(JSON.stringify({ 
           success: false, 
           error: 'Phone number does not match profile' 
@@ -61,15 +74,28 @@ serve(async (req) => {
       }
     }
 
-    // Credit wallet
-    await supabase.rpc('credit_wallet', { p_user_id: user_id, p_amount: amount });
+    // Credit wallet using service role client
+    const { error: creditError } = await supabaseAdmin.rpc('credit_wallet', { 
+      p_user_id: user_id, 
+      p_amount: amount 
+    });
+
+    if (creditError) {
+      console.error('Credit wallet error:', creditError);
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: 'Failed to credit wallet' 
+      }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
     // Log audit event
-    await supabase.rpc('log_audit', {
+    await supabaseAdmin.rpc('log_audit', {
       p_user_id: user_id,
       p_action: 'WALLET_TOPUP',
       p_details: { amount, phone: phone || 'not provided' }
     });
+
+    console.log(`Wallet topped up for user ${user_id}: ${amount}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
