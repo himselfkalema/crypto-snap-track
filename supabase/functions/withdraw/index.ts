@@ -30,6 +30,30 @@ const PROVIDER_CONFIG = {
   },
 };
 
+// Validate provider configuration
+function validateProviderConfig(provider: string): { valid: boolean; error?: string } {
+  if (provider === 'MTN') {
+    const cfg = PROVIDER_CONFIG.MTN;
+    if (!cfg.baseUrl || !cfg.baseUrl.startsWith('http')) {
+      return { valid: false, error: 'MTN Mobile Money is not configured. Please contact support.' };
+    }
+    if (!cfg.subsKey || !cfg.userId || !cfg.apiKey) {
+      return { valid: false, error: 'MTN credentials are not configured. Please contact support.' };
+    }
+  } else if (provider === 'AIRTEL') {
+    const cfg = PROVIDER_CONFIG.AIRTEL;
+    if (!cfg.baseUrl || !cfg.baseUrl.startsWith('http')) {
+      return { valid: false, error: 'Airtel Money is not configured. Please contact support.' };
+    }
+    if (!cfg.clientId || !cfg.clientSecret) {
+      return { valid: false, error: 'Airtel credentials are not configured. Please contact support.' };
+    }
+  } else {
+    return { valid: false, error: `Unsupported provider: ${provider}` };
+  }
+  return { valid: true };
+}
+
 // Input validation schema
 const withdrawSchema = z.object({
   gross_amount: z.number()
@@ -221,6 +245,16 @@ serve(async (req) => {
       await supabase.rpc('credit_wallet', { p_user_id: user_id, p_amount: gross_amount });
       return new Response(JSON.stringify({ error: 'Transaction failed. Please try again.' }), 
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
+    // Validate provider configuration before calling API
+    const providerValidation = validateProviderConfig(provider);
+    if (!providerValidation.valid) {
+      // Rollback: mark failed and refund
+      await supabase.from('withdrawals').update({ status: 'FAILED' }).eq('id', withdrawRow.id);
+      await supabase.rpc('credit_wallet', { p_user_id: user_id, p_amount: gross_amount });
+      return new Response(JSON.stringify({ error: providerValidation.error }), 
+        { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     // Call provider API
