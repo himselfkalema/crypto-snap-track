@@ -64,9 +64,9 @@ const withdrawSchema = z.object({
 
 async function getMtnToken(cfg: any) {
   console.log('MTN Token Request - URL:', `${cfg.baseUrl}/disbursement/token/`);
-  console.log('MTN Token Request - UserId exists:', !!cfg.userId);
-  console.log('MTN Token Request - ApiKey exists:', !!cfg.apiKey);
-  console.log('MTN Token Request - SubsKey exists:', !!cfg.subsKey);
+  console.log('MTN Token Request - UserId exists:', !!cfg.userId, 'Preview:', cfg.userId?.substring(0, 8));
+  console.log('MTN Token Request - ApiKey exists:', !!cfg.apiKey, 'Length:', cfg.apiKey?.length);
+  console.log('MTN Token Request - SubsKey exists:', !!cfg.subsKey, 'Preview:', cfg.subsKey?.substring(0, 8));
   
   const res = await fetch(`${cfg.baseUrl}/disbursement/token/`, {
     method: "POST",
