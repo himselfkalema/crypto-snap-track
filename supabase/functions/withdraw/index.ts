@@ -63,6 +63,11 @@ const withdrawSchema = z.object({
 });
 
 async function getMtnToken(cfg: any) {
+  console.log('MTN Token Request - URL:', `${cfg.baseUrl}/disbursement/token/`);
+  console.log('MTN Token Request - UserId exists:', !!cfg.userId);
+  console.log('MTN Token Request - ApiKey exists:', !!cfg.apiKey);
+  console.log('MTN Token Request - SubsKey exists:', !!cfg.subsKey);
+  
   const res = await fetch(`${cfg.baseUrl}/disbursement/token/`, {
     method: "POST",
     headers: {
@@ -72,8 +77,15 @@ async function getMtnToken(cfg: any) {
     },
     body: "grant_type=client_credentials",
   });
-  if (!res.ok) throw new Error('MTN token request failed');
+  
+  if (!res.ok) {
+    const errorText = await res.text();
+    console.error('MTN Token Error - Status:', res.status, 'Response:', errorText);
+    throw new Error(`MTN token request failed: ${res.status}`);
+  }
+  
   const j = await res.json();
+  console.log('MTN Token Success - Got access token');
   return j.access_token;
 }
 
