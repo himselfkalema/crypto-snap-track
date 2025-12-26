@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Navigate } from "react-router-dom";
-import { Wallet, Plus, History, DollarSign, Loader2, ArrowLeft } from "lucide-react";
+import { Wallet, Plus, History, DollarSign, Loader2, ArrowLeft, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import MobileMoneyTopup from "@/components/MobileMoneyTopup";
 import WithdrawForm from "@/components/WithdrawForm";
+
 interface WalletData {
   id: string;
   balance: number;
@@ -39,7 +40,7 @@ const WalletPage = () => {
   const [amount, setAmount] = useState("");
   const [loadingTransactions, setLoadingTransactions] = useState(true);
 
-  // Fetch wallet data - only run when user exists
+  // Fetch wallet data
   useEffect(() => {
     if (!user) return;
     
@@ -70,7 +71,7 @@ const WalletPage = () => {
     fetchWallet();
   }, [user, toast]);
 
-  // Fetch transactions - only run when user exists
+  // Fetch transactions
   useEffect(() => {
     if (!user) return;
     
@@ -102,10 +103,10 @@ const WalletPage = () => {
   // Show loading while checking auth
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20 flex items-center justify-center">
-        <div className="flex items-center gap-3">
+      <div className="min-h-screen bg-background bg-hero bg-mesh flex items-center justify-center">
+        <div className="flex items-center gap-3 glass-card p-6 rounded-2xl">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="text-muted-foreground">Loading...</span>
+          <span className="text-muted-foreground font-medium">Loading...</span>
         </div>
       </div>
     );
@@ -119,7 +120,6 @@ const WalletPage = () => {
   const handleTopUp = async () => {
     if (!user || !wallet) return;
     
-    // Validate inputs
     if (!phone.trim() || !amount.trim()) {
       toast({
         variant: "destructive",
@@ -149,9 +149,7 @@ const WalletPage = () => {
         },
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (data?.success) {
         setWallet({ ...wallet, balance: data.balance });
@@ -159,7 +157,6 @@ const WalletPage = () => {
         setPhone("");
         setAmount("");
         
-        // Refresh transactions
         const { data: newTransactions } = await supabase
           .from("wallet_transactions")
           .select("*")
@@ -167,9 +164,7 @@ const WalletPage = () => {
           .order("created_at", { ascending: false })
           .limit(10);
         
-        if (newTransactions) {
-          setTransactions(newTransactions);
-        }
+        if (newTransactions) setTransactions(newTransactions);
         
         toast({
           title: "Success!",
@@ -200,32 +195,43 @@ const WalletPage = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusStyles = (status: string) => {
     switch (status) {
-      case "completed": return "text-green-600";
-      case "failed": return "text-red-600";
-      default: return "text-yellow-600";
+      case "completed": return "bg-success/10 text-success border-success/20";
+      case "failed": return "bg-destructive/10 text-destructive border-destructive/20";
+      default: return "bg-warning/10 text-warning border-warning/20";
     }
   };
 
+  const getTransactionIcon = (type: string) => {
+    if (type.includes('deposit') || type.includes('topup')) {
+      return <ArrowDownLeft className="h-4 w-4 text-crypto-green" />;
+    }
+    return <ArrowUpRight className="h-4 w-4 text-crypto-red" />;
+  };
+
   return (
-    <div className="min-h-screen bg-background bg-gradient-to-br from-background via-background to-secondary/20">
-      <div className="container max-w-4xl mx-auto p-6">
+    <div className="min-h-screen bg-background bg-hero bg-mesh relative overflow-hidden">
+      {/* Decorative elements */}
+      <div className="absolute top-20 right-20 w-72 h-72 bg-primary/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-20 left-20 w-80 h-80 bg-accent/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="container max-w-4xl mx-auto p-6 relative z-10">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-8 animate-fade-in">
           <Link 
-            to="/" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4"
+            to="/dashboard" 
+            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-4 glass px-4 py-2 rounded-full text-sm"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Portfolio
           </Link>
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary/20">
-              <Wallet className="h-6 w-6 text-primary" />
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-xl bg-gradient-primary shadow-glow">
+              <Wallet className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Wallet</h1>
+              <h1 className="text-3xl font-bold font-display text-foreground">Wallet</h1>
               <p className="text-muted-foreground">Manage your digital wallet balance</p>
             </div>
           </div>
@@ -233,35 +239,39 @@ const WalletPage = () => {
 
         <div className="grid md:grid-cols-2 gap-6">
           {/* Wallet Balance Card */}
-          <Card className="bg-gradient-card border-border/50 backdrop-blur-glass shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <DollarSign className="h-5 w-5 text-primary" />
+          <Card className="glass-card rounded-2xl border-primary/20 animate-fade-in-up">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-3 text-lg">
+                <div className="p-2 rounded-lg bg-primary/20">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                </div>
                 Wallet Balance
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="text-3xl font-bold text-foreground">
-                  {wallet ? `$${wallet.balance.toFixed(2)}` : "Loading..."}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {wallet ? wallet.currency : ""}
+              <div className="space-y-6">
+                <div>
+                  <div className="text-4xl font-bold font-display text-foreground mb-1">
+                    {wallet ? `$${wallet.balance.toFixed(2)}` : "Loading..."}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {wallet ? wallet.currency : ""}
+                  </div>
                 </div>
                 
                 <Dialog open={showModal} onOpenChange={setShowModal}>
                   <DialogTrigger asChild>
-                    <Button className="w-full">
-                      <Plus className="h-4 w-4 mr-2" />
+                    <Button className="w-full py-6 bg-gradient-primary hover:opacity-90 font-semibold shadow-glow">
+                      <Plus className="h-5 w-5 mr-2" />
                       Top Up Wallet
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="glass-strong border-border/50">
                     <DialogHeader>
-                      <DialogTitle>Top Up Wallet</DialogTitle>
+                      <DialogTitle className="font-display text-xl">Top Up Wallet</DialogTitle>
                     </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
+                    <div className="space-y-4 pt-2">
+                      <div className="space-y-2">
                         <Label htmlFor="phone">Mobile Number</Label>
                         <Input
                           id="phone"
@@ -269,9 +279,10 @@ const WalletPage = () => {
                           placeholder="Enter your mobile number"
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
+                          className="glass border-border/50"
                         />
                       </div>
-                      <div>
+                      <div className="space-y-2">
                         <Label htmlFor="amount">Amount (USD)</Label>
                         <Input
                           id="amount"
@@ -281,20 +292,21 @@ const WalletPage = () => {
                           placeholder="Enter amount"
                           value={amount}
                           onChange={(e) => setAmount(e.target.value)}
+                          className="glass border-border/50"
                         />
                       </div>
-                      <div className="flex gap-2 pt-4">
+                      <div className="flex gap-3 pt-4">
                         <Button 
                           variant="outline" 
                           onClick={() => setShowModal(false)}
-                          className="flex-1"
+                          className="flex-1 glass border-border/50"
                         >
                           Cancel
                         </Button>
                         <Button 
                           onClick={handleTopUp} 
                           disabled={loading}
-                          className="flex-1"
+                          className="flex-1 bg-gradient-primary hover:opacity-90"
                         >
                           {loading ? (
                             <>
@@ -314,48 +326,53 @@ const WalletPage = () => {
           </Card>
 
           {/* Recent Transactions */}
-          <Card className="bg-gradient-card border-border/50 backdrop-blur-glass shadow-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <History className="h-5 w-5 text-primary" />
+          <Card className="glass-card rounded-2xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-3 text-lg">
+                <div className="p-2 rounded-lg bg-primary/20">
+                  <History className="h-5 w-5 text-primary" />
+                </div>
                 Recent Transactions
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
                 {loadingTransactions ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
                   </div>
                 ) : transactions.length === 0 ? (
-                  <div className="text-center py-8">
-                    <History className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <div className="text-center py-12">
+                    <div className="p-3 rounded-xl bg-muted/50 w-fit mx-auto mb-3">
+                      <History className="h-8 w-8 text-muted-foreground" />
+                    </div>
                     <p className="text-muted-foreground">No transactions yet</p>
                   </div>
                 ) : (
-                  transactions.map((transaction) => (
+                  transactions.map((transaction, index) => (
                     <div
                       key={transaction.id}
-                      className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-background/50"
+                      className="flex items-center justify-between p-4 rounded-xl glass border-border/30 hover:border-primary/20 transition-colors animate-fade-in"
+                      style={{ animationDelay: `${0.05 * index}s` }}
                     >
-                      <div className="space-y-1">
-                        <div className="font-medium capitalize">
-                          {transaction.transaction_type}
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-muted/50">
+                          {getTransactionIcon(transaction.transaction_type)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
-                          {formatDate(transaction.created_at)}
-                        </div>
-                        {transaction.description && (
-                          <div className="text-xs text-muted-foreground">
-                            {transaction.description}
+                        <div>
+                          <div className="font-medium capitalize text-foreground">
+                            {transaction.transaction_type}
                           </div>
-                        )}
+                          <div className="text-xs text-muted-foreground">
+                            {formatDate(transaction.created_at)}
+                          </div>
+                        </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-semibold">
+                        <div className="font-semibold font-mono text-foreground">
                           +${transaction.amount.toFixed(2)}
                         </div>
-                        <div className={`text-sm capitalize ${getStatusColor(transaction.status)}`}>
+                        <div className={`text-xs px-2 py-0.5 rounded-full border capitalize ${getStatusStyles(transaction.status)}`}>
                           {transaction.status}
                         </div>
                       </div>
@@ -369,62 +386,64 @@ const WalletPage = () => {
 
         {/* Mobile Money Top-up & Withdraw */}
         <div className="mt-6 grid md:grid-cols-2 gap-6">
-          <MobileMoneyTopup 
-            userId={user.id} 
-            onSuccess={() => {
-              // Refresh wallet and transactions after successful topup
-              if (wallet) {
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <MobileMoneyTopup 
+              userId={user.id} 
+              onSuccess={() => {
+                if (wallet) {
+                  supabase
+                    .from("wallets")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .eq("currency", "UGX")
+                    .single()
+                    .then(({ data }) => {
+                      if (data) setWallet(data);
+                    });
+                }
+                
                 supabase
-                  .from("wallets")
+                  .from("wallet_transactions")
                   .select("*")
                   .eq("user_id", user.id)
-                  .eq("currency", "UGX")
-                  .single()
+                  .order("created_at", { ascending: false })
+                  .limit(10)
                   .then(({ data }) => {
-                    if (data) setWallet(data);
+                    if (data) setTransactions(data);
                   });
-              }
-              
-              supabase
-                .from("wallet_transactions")
-                .select("*")
-                .eq("user_id", user.id)
-                .order("created_at", { ascending: false })
-                .limit(10)
-                .then(({ data }) => {
-                  if (data) setTransactions(data);
-                });
-            }}
-          />
+              }}
+            />
+          </div>
 
-          <WithdrawForm 
-            userId={user.id}
-            walletBalance={wallet?.balance || 0}
-            onSuccess={() => {
-              // Refresh wallet and transactions after successful withdrawal
-              if (wallet) {
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <WithdrawForm 
+              userId={user.id}
+              walletBalance={wallet?.balance || 0}
+              onSuccess={() => {
+                if (wallet) {
+                  supabase
+                    .from("wallets")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .eq("currency", "UGX")
+                    .single()
+                    .then(({ data }) => {
+                      if (data) setWallet(data);
+                    });
+                }
+                
                 supabase
-                  .from("wallets")
+                  .from("wallet_transactions")
                   .select("*")
                   .eq("user_id", user.id)
-                  .eq("currency", "UGX")
-                  .single()
+                  .order("created_at", { ascending: false })
+                  .limit(10)
                   .then(({ data }) => {
-                    if (data) setWallet(data);
+                    if (data) setTransactions(data);
                   });
-              }
-              
-              supabase
-                .from("wallet_transactions")
-                .select("*")
-                .eq("user_id", user.id)
-                .order("created_at", { ascending: false })
-                .limit(10)
-                .then(({ data }) => {
-                  if (data) setTransactions(data);
-                });
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
       </div>
     </div>
