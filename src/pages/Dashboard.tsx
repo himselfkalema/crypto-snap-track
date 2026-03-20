@@ -3,6 +3,7 @@ import { useCryptoData } from "@/hooks/useCryptoData";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { PortfolioSummary } from "@/components/crypto/PortfolioSummary";
+import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { PositionCard } from "@/components/crypto/PositionCard";
 import { MarketMovers } from "@/components/crypto/MarketMovers";
 import { DashboardSidebar } from "@/components/crypto/DashboardSidebar";
@@ -194,8 +195,22 @@ const Dashboard = () => {
             </div>
           </Card>
 
+          {/* Portfolio Chart */}
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.25s' }}>
+            <PortfolioChart
+              positions={livePortfolio.map((p) => ({
+                id: p.id,
+                name: p.name,
+                symbol: p.symbol,
+                qty: p.qty,
+                buyPrice: p.buyPrice,
+                currentPrice: p.currentPrice,
+              }))}
+            />
+          </div>
+
           {/* Market Movers */}
-          <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.35s' }}>
             <MarketMovers coins={coins} />
           </div>
         </div>
