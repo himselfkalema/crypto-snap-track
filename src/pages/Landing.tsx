@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, TrendingUp, TrendingDown, Zap, Shield, BarChart3, Wallet, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2, Zap, Shield, BarChart3, Wallet, ArrowRight, Sparkles } from "lucide-react";
+import MarketTicker from "@/components/crypto/MarketTicker";
 import { Button } from "@/components/ui/button";
 
 interface MarketData {
