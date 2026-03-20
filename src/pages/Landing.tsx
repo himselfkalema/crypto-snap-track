@@ -1,40 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2, TrendingUp, TrendingDown, Zap, Shield, BarChart3, Wallet, ArrowRight, Sparkles } from "lucide-react";
+import { Loader2, Zap, Shield, BarChart3, Wallet, ArrowRight, Sparkles } from "lucide-react";
+import MarketTicker from "@/components/crypto/MarketTicker";
 import { Button } from "@/components/ui/button";
-
-interface MarketData {
-  symbol: string;
-  lastPrice: string;
-  priceChangePercent: string;
-}
 
 export default function Landing() {
   const { user, loading } = useAuth();
-  const [markets, setMarkets] = useState<MarketData[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user && !loading) {
       navigate("/dashboard");
     }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    const fetchMarkets = async () => {
-      const symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"];
-      const res = await Promise.all(
-        symbols.map((sym) =>
-          fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}`).then((r) => r.json())
-        )
-      );
-      setMarkets(res);
-    };
-
-    fetchMarkets();
-    const interval = setInterval(fetchMarkets, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
@@ -121,60 +99,7 @@ export default function Landing() {
 
       {/* Live Market Ticker */}
       <section className="relative z-10 px-6 pb-16 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-        <div className="glass-card rounded-2xl p-6 max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-2 rounded-lg bg-primary/20">
-              <BarChart3 className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-xl font-semibold font-display">Live Market</h3>
-            <div className="ml-auto flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-crypto-green opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-crypto-green"></span>
-              </span>
-              <span className="text-sm text-muted-foreground">Live</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {markets.map((coin) => {
-              const isPositive = parseFloat(coin.priceChangePercent) >= 0;
-              return (
-                <div 
-                  key={coin.symbol} 
-                  className="p-4 rounded-xl bg-background/50 border border-border/50 hover:border-primary/30 transition-colors"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-lg">{coin.symbol.replace("USDT", "")}</span>
-                    {isPositive ? (
-                      <TrendingUp className="h-4 w-4 text-crypto-green" />
-                    ) : (
-                      <TrendingDown className="h-4 w-4 text-crypto-red" />
-                    )}
-                  </div>
-                  <div className="text-xl font-mono font-semibold">
-                    ${parseFloat(coin.lastPrice).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-                  </div>
-                  <div className={`text-sm font-medium ${isPositive ? 'text-crypto-green' : 'text-crypto-red'}`}>
-                    {isPositive ? '+' : ''}{parseFloat(coin.priceChangePercent).toFixed(2)}%
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          
-          <p className="mt-6 text-sm text-muted-foreground text-center">
-            Market data provided by{" "}
-            <a
-              href="https://www.binance.com/register?ref=373173114"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline font-medium"
-            >
-              Binance
-            </a>
-          </p>
-        </div>
+        <MarketTicker />
       </section>
 
       {/* Features Grid */}
