@@ -5,37 +5,14 @@ import { Loader2, Zap, Shield, BarChart3, Wallet, ArrowRight, Sparkles } from "l
 import MarketTicker from "@/components/crypto/MarketTicker";
 import { Button } from "@/components/ui/button";
 
-interface MarketData {
-  symbol: string;
-  lastPrice: string;
-  priceChangePercent: string;
-}
-
 export default function Landing() {
   const { user, loading } = useAuth();
-  const [markets, setMarkets] = useState<MarketData[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (user && !loading) {
       navigate("/dashboard");
     }
-  }, [user, loading, navigate]);
-
-  useEffect(() => {
-    const fetchMarkets = async () => {
-      const symbols = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"];
-      const res = await Promise.all(
-        symbols.map((sym) =>
-          fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}`).then((r) => r.json())
-        )
-      );
-      setMarkets(res);
-    };
-
-    fetchMarkets();
-    const interval = setInterval(fetchMarkets, 30000);
-    return () => clearInterval(interval);
   }, []);
 
   if (loading) {
