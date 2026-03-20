@@ -3,6 +3,7 @@ import { useCryptoData } from "@/hooks/useCryptoData";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { PortfolioSummary } from "@/components/crypto/PortfolioSummary";
+import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { PositionCard } from "@/components/crypto/PositionCard";
 import { MarketMovers } from "@/components/crypto/MarketMovers";
 import { DashboardSidebar } from "@/components/crypto/DashboardSidebar";
