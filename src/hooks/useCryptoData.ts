@@ -3,8 +3,7 @@ import { Coin, PortfolioPosition, LivePortfolioPosition, PortfolioSummary } from
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-// CoinCap API v2 — no key required, no exposure risk
-const COINCAP_API_URL = 'https://api.coincap.io/v2/assets?limit=250';
+// Icons served from CoinCap public CDN (no key needed)
 const COINCAP_ICON_URL = (symbol: string) =>
   `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`;
 
@@ -56,13 +55,10 @@ export function useCryptoData(userId?: string) {
     setError(null);
     
     try {
-      const response = await fetch(COINCAP_API_URL);
+      const { data: json, error: fnError } = await supabase.functions.invoke('coincap-proxy');
+      if (fnError) throw fnError;
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch market data');
-      }
 
-      const json = await response.json();
       // Map CoinCap shape -> our Coin interface (mirrors CoinGecko fields used in the app)
       const mapped: Coin[] = (json.data || []).map((a: any) => {
         const price = parseFloat(a.priceUsd) || 0;
