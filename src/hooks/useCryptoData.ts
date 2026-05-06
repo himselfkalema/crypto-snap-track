@@ -3,7 +3,10 @@ import { Coin, PortfolioPosition, LivePortfolioPosition, PortfolioSummary } from
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-const COINGECKO_API_KEY = 'CG-B3pPNyHHBxceCZkpqengQ5Kp';
+// CoinCap API v2 — no key required, no exposure risk
+const COINCAP_API_URL = 'https://api.coincap.io/v2/assets?limit=250';
+const COINCAP_ICON_URL = (symbol: string) =>
+  `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`;
 
 export function useCryptoData(userId?: string) {
   const [coins, setCoins] = useState<Coin[]>([]);
