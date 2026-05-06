@@ -17,3 +17,5 @@ verify_jwt = true
 
 [functions.disbursement-callback]
 verify_jwt = false
+[functions.coincap-proxy]
+verify_jwt = false

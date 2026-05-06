@@ -3,8 +3,7 @@ import { Coin, PortfolioPosition, LivePortfolioPosition, PortfolioSummary } from
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-// CoinCap API v2 — no key required, no exposure risk
-const COINCAP_API_URL = 'https://api.coincap.io/v2/assets?limit=250';
+// Icons served from CoinCap public CDN (no key needed)
 const COINCAP_ICON_URL = (symbol: string) =>
   `https://assets.coincap.io/assets/icons/${symbol.toLowerCase()}@2x.png`;
 
