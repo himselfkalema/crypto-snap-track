@@ -141,14 +141,17 @@ const WalletPage = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("wallet-topup", {
-        body: {
-          user_id: user.id,
-          phone: phone.trim(),
-          amount: amountNum,
-        },
+      // wallet-topup endpoint disabled — direct top-up requires verified payment.
+      // Redirect users to the mobile-money flow via <MobileMoneyTopup /> instead.
+      toast({
+        variant: "destructive",
+        title: "Use Mobile Money",
+        description: "Direct top-ups are disabled. Please use the Mobile Money option to fund your wallet."
       });
-
+      setShowModal(false);
+      return;
+      // eslint-disable-next-line no-unreachable
+      const { data, error } = { data: null as any, error: null as any };
       if (error) throw error;
 
       if (data?.success) {
