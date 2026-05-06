@@ -57,13 +57,8 @@ export function useCryptoData(userId?: string) {
     try {
       const { data: json, error: fnError } = await supabase.functions.invoke('coincap-proxy');
       if (fnError) throw fnError;
-      const response = { ok: true } as const;
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch market data');
-      }
 
-      const json = await response.json();
       // Map CoinCap shape -> our Coin interface (mirrors CoinGecko fields used in the app)
       const mapped: Coin[] = (json.data || []).map((a: any) => {
         const price = parseFloat(a.priceUsd) || 0;
