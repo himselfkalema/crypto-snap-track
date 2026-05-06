@@ -55,7 +55,9 @@ export function useCryptoData(userId?: string) {
     setError(null);
     
     try {
-      const response = await fetch(COINCAP_API_URL);
+      const { data: json, error: fnError } = await supabase.functions.invoke('coincap-proxy');
+      if (fnError) throw fnError;
+      const response = { ok: true } as const;
 
       if (!response.ok) {
         throw new Error('Failed to fetch market data');
