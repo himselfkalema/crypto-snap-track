@@ -219,13 +219,13 @@ const Dashboard = () => {
         <footer className="mt-12 text-center text-sm text-muted-foreground py-6 border-t border-border/30">
           <div className="flex items-center justify-center gap-2">
             <span>Powered by</span>
-            <a 
-              href="https://coingecko.com" 
-              target="_blank" 
+            <a
+              href="https://coincap.io"
+              target="_blank"
               rel="noopener noreferrer"
               className="text-primary hover:underline font-medium"
             >
-              CoinGecko API
+              CoinCap API
             </a>
             <span>•</span>
             <span>Made with ❤️ for crypto enthusiasts</span>
