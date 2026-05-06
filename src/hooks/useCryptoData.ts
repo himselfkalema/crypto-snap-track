@@ -56,21 +56,31 @@ export function useCryptoData(userId?: string) {
     setError(null);
     
     try {
-      const response = await fetch(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=250&page=1&sparkline=false',
-        {
-          headers: {
-            'x-cg-demo-api-key': COINGECKO_API_KEY
-          }
-        }
-      );
-      
+      const response = await fetch(COINCAP_API_URL);
+
       if (!response.ok) {
         throw new Error('Failed to fetch market data');
       }
-      
-      const data = await response.json();
-      setCoins(data);
+
+      const json = await response.json();
+      // Map CoinCap shape -> our Coin interface (mirrors CoinGecko fields used in the app)
+      const mapped: Coin[] = (json.data || []).map((a: any) => {
+        const price = parseFloat(a.priceUsd) || 0;
+        const changePct = parseFloat(a.changePercent24Hr) || 0;
+        const change24h = (price * changePct) / 100;
+        return {
+          id: a.id,
+          symbol: (a.symbol || '').toLowerCase(),
+          name: a.name,
+          image: COINCAP_ICON_URL(a.symbol),
+          current_price: price,
+          market_cap: parseFloat(a.marketCapUsd) || 0,
+          market_cap_rank: parseInt(a.rank, 10) || 0,
+          price_change_24h: Number(change24h.toFixed(8)),
+          price_change_percentage_24h: Number(changePct.toFixed(4)),
+        };
+      });
+      setCoins(mapped);
     } catch (e) {
       setError('Failed to load coin data. Please check your internet connection.');
       console.error('Failed to fetch coins:', e);
