@@ -101,13 +101,13 @@ const WithdrawForm: React.FC<WithdrawFormProps> = ({ userId, walletBalance, onSu
       return;
     }
 
-    // Validate phone format (basic validation)
-    const phoneRegex = /^[0-9]{9,15}$/;
-    if (!phoneRegex.test(mobile.replace(/\D/g, ''))) {
+    // Validate phone format — must match backend (256XXXXXXXXX, Uganda intl format)
+    const phoneRegex = /^256\d{9}$/;
+    if (!phoneRegex.test(mobile.trim())) {
       toast({
         variant: "destructive",
         title: "Invalid Phone",
-        description: "Please enter a valid mobile number"
+        description: "Please enter phone in format 256XXXXXXXXX"
       });
       return;
     }
