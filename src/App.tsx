@@ -4,12 +4,18 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
-import Dashboard from "./pages/Dashboard";
 import Auth from "./pages/Auth";
-import Wallet from "./pages/Wallet";
-import Admin from "./pages/Admin";
+import ResetPassword from "./pages/ResetPassword";
+import Marketplace from "./pages/Marketplace";
+import OfferDetail from "./pages/OfferDetail";
+import NewOffer from "./pages/NewOffer";
+import Trades from "./pages/Trades";
+import TradeRoom from "./pages/TradeRoom";
+import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
-import SubscriptionManagement from "./pages/SubscriptionManagement";
+import Notifications from "./pages/Notifications";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,13 +28,18 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/wallet" element={<Wallet />} />
-          <Route path="/admin" element={<Admin />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/offers/new" element={<NewOffer />} />
+          <Route path="/offers/:id" element={<OfferDetail />} />
+          <Route path="/trades" element={<Trades />} />
+          <Route path="/trades/:id" element={<TradeRoom />} />
+          <Route path="/profile/:username" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="/pricing" element={<Pricing />} />
-          <Route path="/subscription" element={<SubscriptionManagement />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/notifications" element={<Notifications />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
