@@ -61,7 +61,19 @@ export default function NewOffer() {
     if (parsed.data.min_trade > parsed.data.max_trade) return toast.error('Min trade must be ≤ max trade');
 
     setSubmitting(true);
-    const { error } = await supabase.from('offers').insert({ ...parsed.data, user_id: user.id });
+    const { error } = await supabase.from('offers').insert({
+      user_id: user.id,
+      type: parsed.data.type,
+      coin: parsed.data.coin,
+      fiat_currency: parsed.data.fiat_currency,
+      price: parsed.data.price,
+      available_amount: parsed.data.available_amount,
+      min_trade: parsed.data.min_trade,
+      max_trade: parsed.data.max_trade,
+      payment_methods: parsed.data.payment_methods,
+      country: parsed.data.country,
+      terms: parsed.data.terms,
+    });
     setSubmitting(false);
     if (error) return toast.error(error.message);
     toast.success('Offer created');
