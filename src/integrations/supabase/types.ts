@@ -10,289 +10,286 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
+      announcements: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          published: boolean
+          title: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published?: boolean
+          title: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          published?: boolean
+          title?: string
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
-          created_at: string | null
-          details: Json | null
+          actor_id: string | null
+          created_at: string
           id: string
-          ip_address: string | null
-          user_id: string | null
+          metadata: Json | null
+          target_id: string | null
+          target_type: string | null
         }
         Insert: {
           action: string
-          created_at?: string | null
-          details?: Json | null
+          actor_id?: string | null
+          created_at?: string
           id?: string
-          ip_address?: string | null
-          user_id?: string | null
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
         }
         Update: {
           action?: string
-          created_at?: string | null
-          details?: Json | null
+          actor_id?: string | null
+          created_at?: string
           id?: string
-          ip_address?: string | null
-          user_id?: string | null
+          metadata?: Json | null
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      dispute_evidence: {
+        Row: {
+          created_at: string
+          dispute_id: string
+          file_url: string | null
+          id: string
+          note: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_id: string
+          file_url?: string | null
+          id?: string
+          note?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dispute_id?: string
+          file_url?: string | null
+          id?: string
+          note?: string | null
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "audit_logs_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "dispute_evidence_dispute_id_fkey"
+            columns: ["dispute_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "disputes"
             referencedColumns: ["id"]
           },
         ]
       }
-      deposits: {
+      disputes: {
         Row: {
-          amount: number
-          confirmed_at: string | null
-          confirmed_by: string | null
-          created_at: string | null
-          currency: string
-          id: string
-          lightning_invoice_id: string | null
-          method: string
-          notes: string | null
-          processed_at: string | null
-          reference: string | null
-          status: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          created_at?: string | null
-          currency?: string
-          id?: string
-          lightning_invoice_id?: string | null
-          method: string
-          notes?: string | null
-          processed_at?: string | null
-          reference?: string | null
-          status?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          created_at?: string | null
-          currency?: string
-          id?: string
-          lightning_invoice_id?: string | null
-          method?: string
-          notes?: string | null
-          processed_at?: string | null
-          reference?: string | null
-          status?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      donations: {
-        Row: {
-          amount: number
           created_at: string
-          currency: string
-          donor_name: string
-          guest_email: string | null
           id: string
-          status: string
-          stripe_session_id: string | null
-          updated_at: string
-          user_id: string | null
+          opener_id: string
+          reason: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["dispute_status"]
+          trade_id: string
         }
         Insert: {
-          amount: number
           created_at?: string
-          currency?: string
-          donor_name: string
-          guest_email?: string | null
           id?: string
-          status?: string
-          stripe_session_id?: string | null
-          updated_at?: string
-          user_id?: string | null
+          opener_id: string
+          reason: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+          trade_id: string
         }
         Update: {
-          amount?: number
           created_at?: string
-          currency?: string
-          donor_name?: string
-          guest_email?: string | null
           id?: string
-          status?: string
-          stripe_session_id?: string | null
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      lightning_invoices: {
-        Row: {
-          amount_sat: number
-          created_at: string | null
-          id: string
-          lndhub_invoice_id: string | null
-          payment_request: string | null
-          status: string | null
-          user_id: string | null
-        }
-        Insert: {
-          amount_sat: number
-          created_at?: string | null
-          id?: string
-          lndhub_invoice_id?: string | null
-          payment_request?: string | null
-          status?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          amount_sat?: number
-          created_at?: string | null
-          id?: string
-          lndhub_invoice_id?: string | null
-          payment_request?: string | null
-          status?: string | null
-          user_id?: string | null
+          opener_id?: string
+          reason?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["dispute_status"]
+          trade_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "lightning_invoices_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            foreignKeyName: "disputes_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: true
+            referencedRelation: "trades"
             referencedColumns: ["id"]
           },
         ]
       }
-      market_preferences: {
+      feature_flags: {
         Row: {
+          enabled: boolean
+          key: string
+          payload: Json | null
+          updated_at: string
+        }
+        Insert: {
+          enabled?: boolean
+          key: string
+          payload?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          enabled?: boolean
+          key?: string
+          payload?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
           created_at: string
           id: string
-          preferred_symbols: string[]
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      offers: {
+        Row: {
+          available_amount: number
+          coin: string
+          country: string | null
+          created_at: string
+          featured: boolean
+          fiat_currency: string
+          id: string
+          max_trade: number
+          min_trade: number
+          payment_methods: string[]
+          price: number
+          status: Database["public"]["Enums"]["offer_status"]
+          terms: string | null
+          type: Database["public"]["Enums"]["offer_type"]
           updated_at: string
           user_id: string
         }
         Insert: {
+          available_amount: number
+          coin: string
+          country?: string | null
           created_at?: string
+          featured?: boolean
+          fiat_currency?: string
           id?: string
-          preferred_symbols?: string[]
+          max_trade: number
+          min_trade: number
+          payment_methods?: string[]
+          price: number
+          status?: Database["public"]["Enums"]["offer_status"]
+          terms?: string | null
+          type: Database["public"]["Enums"]["offer_type"]
           updated_at?: string
           user_id: string
         }
         Update: {
+          available_amount?: number
+          coin?: string
+          country?: string | null
           created_at?: string
+          featured?: boolean
+          fiat_currency?: string
           id?: string
-          preferred_symbols?: string[]
+          max_trade?: number
+          min_trade?: number
+          payment_methods?: string[]
+          price?: number
+          status?: Database["public"]["Enums"]["offer_status"]
+          terms?: string | null
+          type?: Database["public"]["Enums"]["offer_type"]
           updated_at?: string
           user_id?: string
         }
         Relationships: []
       }
-      mobile_money_transactions: {
+      payments: {
         Row: {
           amount: number
-          created_at: string | null
+          created_at: string
           currency: string
-          external_tx_id: string | null
           id: string
-          phone_number: string
-          provider: string
+          lemon_order_id: string | null
+          metadata: Json | null
           status: string
           user_id: string
         }
         Insert: {
           amount: number
-          created_at?: string | null
+          created_at?: string
           currency?: string
-          external_tx_id?: string | null
           id?: string
-          phone_number: string
-          provider: string
-          status?: string
+          lemon_order_id?: string | null
+          metadata?: Json | null
+          status: string
           user_id: string
         }
         Update: {
           amount?: number
-          created_at?: string | null
+          created_at?: string
           currency?: string
-          external_tx_id?: string | null
           id?: string
-          phone_number?: string
-          provider?: string
+          lemon_order_id?: string | null
+          metadata?: Json | null
           status?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      newsletter_subscriptions: {
-        Row: {
-          email: string
-          id: string
-          status: string
-          subscribed_at: string
-          unsubscribed_at: string | null
-        }
-        Insert: {
-          email: string
-          id?: string
-          status?: string
-          subscribed_at?: string
-          unsubscribed_at?: string | null
-        }
-        Update: {
-          email?: string
-          id?: string
-          status?: string
-          subscribed_at?: string
-          unsubscribed_at?: string | null
-        }
-        Relationships: []
-      }
-      portfolios: {
-        Row: {
-          buy_price: number
-          coin_id: string
-          created_at: string
-          id: string
-          name: string
-          qty: number
-          symbol: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          buy_price: number
-          coin_id: string
-          created_at?: string
-          id?: string
-          name: string
-          qty: number
-          symbol: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          buy_price?: number
-          coin_id?: string
-          created_at?: string
-          id?: string
-          name?: string
-          qty?: number
-          symbol?: string
-          updated_at?: string
           user_id?: string
         }
         Relationships: []
@@ -300,333 +297,245 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
-          full_name: string | null
+          bio: string | null
+          country: string | null
+          created_at: string
+          display_name: string | null
           id: string
-          mobile: string | null
-          provider: string | null
-          subscription_tier: string | null
-          updated_at: string | null
-          username: string | null
-          withdraw_skips_limit: number | null
-          withdraw_skips_used: number | null
+          reputation_score: number
+          successful_trades: number
+          suspended: boolean
+          total_trades: number
+          updated_at: string
+          username: string
+          verified: boolean
         }
         Insert: {
           avatar_url?: string | null
-          full_name?: string | null
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
           id: string
-          mobile?: string | null
-          provider?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
-          username?: string | null
-          withdraw_skips_limit?: number | null
-          withdraw_skips_used?: number | null
+          reputation_score?: number
+          successful_trades?: number
+          suspended?: boolean
+          total_trades?: number
+          updated_at?: string
+          username: string
+          verified?: boolean
         }
         Update: {
           avatar_url?: string | null
-          full_name?: string | null
+          bio?: string | null
+          country?: string | null
+          created_at?: string
+          display_name?: string | null
           id?: string
-          mobile?: string | null
-          provider?: string | null
-          subscription_tier?: string | null
-          updated_at?: string | null
-          username?: string | null
-          withdraw_skips_limit?: number | null
-          withdraw_skips_used?: number | null
+          reputation_score?: number
+          successful_trades?: number
+          suspended?: boolean
+          total_trades?: number
+          updated_at?: string
+          username?: string
+          verified?: boolean
         }
         Relationships: []
       }
-      tiers: {
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          trade_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          trade_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewee_id?: string
+          reviewer_id?: string
+          trade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
         Row: {
           created_at: string
-          description: string | null
-          features: Json
+          current_period_end: string | null
           id: string
-          name: string
-          price_usd: number
+          lemon_customer_id: string | null
+          lemon_subscription_id: string | null
+          plan: Database["public"]["Enums"]["plan_tier"]
+          status: Database["public"]["Enums"]["sub_status"]
+          updated_at: string
+          user_id: string
         }
         Insert: {
           created_at?: string
-          description?: string | null
-          features: Json
+          current_period_end?: string | null
           id?: string
-          name: string
-          price_usd: number
+          lemon_customer_id?: string | null
+          lemon_subscription_id?: string | null
+          plan?: Database["public"]["Enums"]["plan_tier"]
+          status?: Database["public"]["Enums"]["sub_status"]
+          updated_at?: string
+          user_id: string
         }
         Update: {
           created_at?: string
-          description?: string | null
-          features?: Json
+          current_period_end?: string | null
           id?: string
-          name?: string
-          price_usd?: number
+          lemon_customer_id?: string | null
+          lemon_subscription_id?: string | null
+          plan?: Database["public"]["Enums"]["plan_tier"]
+          status?: Database["public"]["Enums"]["sub_status"]
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
+      }
+      trade_messages: {
+        Row: {
+          content: string | null
+          created_at: string
+          file_url: string | null
+          id: string
+          read_at: string | null
+          sender_id: string
+          trade_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id: string
+          trade_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          file_url?: string | null
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+          trade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_messages_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trades: {
+        Row: {
+          buyer_id: string
+          cancelled_at: string | null
+          coin: string
+          completed_at: string | null
+          created_at: string
+          crypto_amount: number
+          expires_at: string
+          fiat_amount: number
+          fiat_currency: string
+          id: string
+          offer_id: string
+          payment_method: string | null
+          price: number
+          seller_id: string
+          status: Database["public"]["Enums"]["trade_status"]
+          updated_at: string
+        }
+        Insert: {
+          buyer_id: string
+          cancelled_at?: string | null
+          coin: string
+          completed_at?: string | null
+          created_at?: string
+          crypto_amount: number
+          expires_at?: string
+          fiat_amount: number
+          fiat_currency: string
+          id?: string
+          offer_id: string
+          payment_method?: string | null
+          price: number
+          seller_id: string
+          status?: Database["public"]["Enums"]["trade_status"]
+          updated_at?: string
+        }
+        Update: {
+          buyer_id?: string
+          cancelled_at?: string | null
+          coin?: string
+          completed_at?: string | null
+          created_at?: string
+          crypto_amount?: number
+          expires_at?: string
+          fiat_amount?: number
+          fiat_currency?: string
+          id?: string
+          offer_id?: string
+          payment_method?: string | null
+          price?: number
+          seller_id?: string
+          status?: Database["public"]["Enums"]["trade_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trades_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
-          created_at?: string | null
-          id?: string
-          role: Database["public"]["Enums"]["app_role"]
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_subscriptions: {
-        Row: {
-          auto_renew: boolean | null
-          created_at: string
-          expires_at: string | null
-          id: string
-          started_at: string
-          status: string
-          tier_id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          auto_renew?: boolean | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          started_at?: string
-          status: string
-          tier_id: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          auto_renew?: boolean | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          started_at?: string
-          status?: string
-          tier_id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_subscriptions_tier_id_fkey"
-            columns: ["tier_id"]
-            isOneToOne: false
-            referencedRelation: "tiers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      volunteer_applications: {
-        Row: {
-          availability: string | null
-          created_at: string
-          email: string
-          experience: string | null
-          id: string
-          interests: string | null
-          name: string
-          phone: string | null
-          status: string
-          updated_at: string
-          user_id: string | null
-        }
-        Insert: {
-          availability?: string | null
-          created_at?: string
-          email: string
-          experience?: string | null
-          id?: string
-          interests?: string | null
-          name: string
-          phone?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string | null
-        }
-        Update: {
-          availability?: string | null
-          created_at?: string
-          email?: string
-          experience?: string | null
-          id?: string
-          interests?: string | null
-          name?: string
-          phone?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      wallet_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          description: string | null
-          id: string
-          phone_number: string | null
-          status: string
-          transaction_type: string
-          updated_at: string
-          user_id: string
-          wallet_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          phone_number?: string | null
-          status?: string
-          transaction_type: string
-          updated_at?: string
-          user_id: string
-          wallet_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          description?: string | null
-          id?: string
-          phone_number?: string | null
-          status?: string
-          transaction_type?: string
-          updated_at?: string
-          user_id?: string
-          wallet_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "wallet_transactions_wallet_id_fkey"
-            columns: ["wallet_id"]
-            isOneToOne: false
-            referencedRelation: "wallets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      wallets: {
-        Row: {
-          balance: number
-          created_at: string
-          currency: string
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          balance?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          balance?: number
-          created_at?: string
-          currency?: string
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      withdraw_skips: {
-        Row: {
-          created_at: string
-          id: string
-          limit_per_month: number
-          month: string
-          skips_used: number
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          limit_per_month?: number
-          month: string
-          skips_used?: number
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          limit_per_month?: number
-          month?: string
-          skips_used?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "withdraw_skips_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      withdrawals: {
-        Row: {
-          created_at: string | null
-          currency: string
-          external_ref: string | null
-          fee_amount: number
-          gross_amount: number
-          id: string
-          mobile_number: string
-          net_amount: number
-          provider: string
-          status: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          currency?: string
-          external_ref?: string | null
-          fee_amount: number
-          gross_amount: number
-          id?: string
-          mobile_number: string
-          net_amount: number
-          provider?: string
-          status?: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          currency?: string
-          external_ref?: string | null
-          fee_amount?: number
-          gross_amount?: number
-          id?: string
-          mobile_number?: string
-          net_amount?: number
-          provider?: string
-          status?: string
-          updated_at?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
@@ -636,14 +545,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      credit_wallet: {
-        Args: { p_amount: number; p_user_id: string }
-        Returns: undefined
-      }
-      debit_wallet_if_enough: {
-        Args: { p_amount: number; p_user_id: string }
-        Returns: boolean
-      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -651,22 +552,20 @@ export type Database = {
         }
         Returns: boolean
       }
-      increment_wallet_balance: {
-        Args: { p_amount: number; p_user_id: string }
-        Returns: undefined
-      }
-      log_audit: {
-        Args: {
-          p_action: string
-          p_details?: Json
-          p_ip_address?: string
-          p_user_id: string
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       app_role: "admin" | "user"
+      dispute_status: "open" | "under_review" | "resolved"
+      offer_status: "active" | "paused" | "completed" | "deleted"
+      offer_type: "buy" | "sell"
+      plan_tier: "free" | "pro" | "premium"
+      sub_status: "active" | "cancelled" | "expired" | "past_due"
+      trade_status:
+        | "pending"
+        | "payment_sent"
+        | "completed"
+        | "cancelled"
+        | "disputed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -795,6 +694,18 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      dispute_status: ["open", "under_review", "resolved"],
+      offer_status: ["active", "paused", "completed", "deleted"],
+      offer_type: ["buy", "sell"],
+      plan_tier: ["free", "pro", "premium"],
+      sub_status: ["active", "cancelled", "expired", "past_due"],
+      trade_status: [
+        "pending",
+        "payment_sent",
+        "completed",
+        "cancelled",
+        "disputed",
+      ],
     },
   },
 } as const

@@ -1,21 +1,4 @@
-project_id = "ixbulutmgfmamrvvlpap"
+project_id = "vjngldemsxvkomoguhko"
 
-[functions.send-custom-email]
-verify_jwt = false
-
-[functions.wallet-topup]
-verify_jwt = true
-
-[functions.mobile-money]
-verify_jwt = false
-
-[functions.admin-deposits]
-verify_jwt = true
-
-[functions.withdraw]
-verify_jwt = true
-
-[functions.disbursement-callback]
-verify_jwt = false
-[functions.coincap-proxy]
+[functions.lemon-webhook]
 verify_jwt = false

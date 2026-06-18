@@ -1,307 +1,199 @@
 import { useEffect, useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-
-interface Deposit {
-  id: string;
-  user_id: string;
-  amount: number;
-  currency: string;
-  method: string;
-  reference: string | null;
-  status: string;
-  created_at: string;
-  notes: string | null;
-}
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 
 export default function Admin() {
-  const [deposits, setDeposits] = useState<Deposit[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [processingId, setProcessingId] = useState<string | null>(null);
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const { user, loading } = useAuth();
+  const isAdmin = useIsAdmin();
+  const [stats, setStats] = useState({ users: 0, trades: 0, openDisputes: 0, activeOffers: 0, revenue: 0 });
+  const [users, setUsers] = useState<any[]>([]);
+  const [tradesList, setTradesList] = useState<any[]>([]);
+  const [disputes, setDisputes] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [annTitle, setAnnTitle] = useState('');
+  const [annBody, setAnnBody] = useState('');
+  const [search, setSearch] = useState('');
 
-  // Check admin role
   useEffect(() => {
-    const checkAdminRole = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        navigate('/auth');
-        return;
-      }
-
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .single();
-
-      if (!roles) {
-        toast({
-          title: 'Access Denied',
-          description: 'You do not have admin privileges',
-          variant: 'destructive'
-        });
-        navigate('/');
-        return;
-      }
-
-      setIsAdmin(true);
-      fetchDeposits();
+    if (!isAdmin) return;
+    const load = async () => {
+      const [usersC, tradesC, openDispC, activeOffersC, payments] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('trades').select('*', { count: 'exact', head: true }),
+        supabase.from('disputes').select('*', { count: 'exact', head: true }).neq('status', 'resolved'),
+        supabase.from('offers').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+        supabase.from('payments').select('amount').eq('status', 'paid'),
+      ]);
+      setStats({
+        users: usersC.count ?? 0,
+        trades: tradesC.count ?? 0,
+        openDisputes: openDispC.count ?? 0,
+        activeOffers: activeOffersC.count ?? 0,
+        revenue: (payments.data ?? []).reduce((s, p) => s + Number(p.amount), 0),
+      });
+      const [{ data: u }, { data: t }, { data: d }, { data: l }] = await Promise.all([
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('trades').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('disputes').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('audit_logs').select('*').order('created_at', { ascending: false }).limit(100),
+      ]);
+      setUsers(u ?? []); setTradesList(t ?? []); setDisputes(d ?? []); setLogs(l ?? []);
     };
+    load();
+  }, [isAdmin]);
 
-    checkAdminRole();
-  }, [navigate, toast]);
+  if (loading) return null;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
 
-  const fetchDeposits = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('deposits')
-      .select('*')
-      .in('status', ['PENDING', 'CONFIRMED'])
-      .order('created_at', { ascending: false });
+  const audit = (action: string, target: string) =>
+    supabase.from('audit_logs').insert({ actor_id: user.id, action, target_id: target });
 
-    if (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to load deposits',
-        variant: 'destructive'
-      });
-    } else {
-      setDeposits(data || []);
-    }
-    setLoading(false);
+  const toggleSuspend = async (u: any) => {
+    await supabase.from('profiles').update({ suspended: !u.suspended }).eq('id', u.id);
+    await audit(u.suspended ? 'unsuspend_user' : 'suspend_user', u.id);
+    setUsers(prev => prev.map(x => x.id === u.id ? { ...x, suspended: !u.suspended } : x));
+  };
+  const toggleVerify = async (u: any) => {
+    await supabase.from('profiles').update({ verified: !u.verified }).eq('id', u.id);
+    await audit(u.verified ? 'unverify_user' : 'verify_user', u.id);
+    setUsers(prev => prev.map(x => x.id === u.id ? { ...x, verified: !u.verified } : x));
   };
 
-  const handleAction = async (depositId: string, action: 'confirm' | 'process' | 'reject') => {
-    setProcessingId(depositId);
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
-
-      const response = await supabase.functions.invoke('admin-deposits', {
-        body: { 
-          depositId, 
-          action,
-          notes: notes[depositId] || null
-        },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`
-        }
-      });
-
-      if (response.error) throw response.error;
-
-      toast({
-        title: 'Success',
-        description: `Deposit ${action}ed successfully`
-      });
-
-      setNotes(prev => ({ ...prev, [depositId]: '' }));
-      fetchDeposits();
-    } catch (error: any) {
-      console.error('Action error:', error);
-      toast({
-        title: 'Error',
-        description: error.message || `Failed to ${action} deposit`,
-        variant: 'destructive'
-      });
-    } finally {
-      setProcessingId(null);
-    }
+  const resolveDispute = async (id: string, resolution: string) => {
+    await supabase.from('disputes').update({ status: 'resolved', resolution, resolved_by: user.id, resolved_at: new Date().toISOString() }).eq('id', id);
+    await audit('resolve_dispute', id);
+    setDisputes(prev => prev.map(d => d.id === id ? { ...d, status: 'resolved', resolution } : d));
+    toast.success('Dispute resolved');
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+  const publishAnnouncement = async () => {
+    if (!annTitle.trim() || !annBody.trim()) return toast.error('Title and body required');
+    await supabase.from('announcements').insert({ title: annTitle, body: annBody, created_by: user.id });
+    await audit('publish_announcement', annTitle);
+    setAnnTitle(''); setAnnBody('');
+    toast.success('Announcement published');
   };
 
-  if (isAdmin === null || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const filteredUsers = users.filter(u => !search || u.username.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-primary/10 rounded-lg">
-              <Shield className="h-6 w-6 text-primary" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Admin Panel</h1>
-              <p className="text-muted-foreground">Manage deposit requests</p>
-            </div>
-          </div>
-          <Button variant="outline" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </Button>
-        </div>
+    <AppShell>
+      <div className="container py-8 space-y-6">
+        <h1 className="text-3xl font-display font-bold">Admin dashboard</h1>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <Clock className="h-8 w-8 text-yellow-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Pending</p>
-                <p className="text-2xl font-bold">
-                  {deposits.filter(d => d.status === 'PENDING').length}
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-blue-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Confirmed</p>
-                <p className="text-2xl font-bold">
-                  {deposits.filter(d => d.status === 'CONFIRMED').length}
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-4 bg-card border-border">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-8 w-8 text-green-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Deposits</p>
-                <p className="text-2xl font-bold">{deposits.length}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        {/* Deposits List */}
-        <div className="space-y-4">
-          {deposits.length === 0 ? (
-            <Card className="p-8 text-center bg-card border-border">
-              <p className="text-muted-foreground">No pending deposits</p>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+          {[
+            { label: 'Users', value: stats.users },
+            { label: 'Trades', value: stats.trades },
+            { label: 'Active offers', value: stats.activeOffers },
+            { label: 'Open disputes', value: stats.openDisputes },
+            { label: 'Revenue', value: `$${stats.revenue.toFixed(2)}` },
+          ].map(s => (
+            <Card key={s.label} className="glass-card p-4">
+              <div className="text-xs text-muted-foreground">{s.label}</div>
+              <div className="font-mono text-2xl font-bold mt-1">{s.value}</div>
             </Card>
-          ) : (
-            deposits.map((deposit) => (
-              <Card key={deposit.id} className="p-6 bg-card border-border">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        deposit.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-500' :
-                        deposit.status === 'CONFIRMED' ? 'bg-blue-500/20 text-blue-500' :
-                        'bg-green-500/20 text-green-500'
-                      }`}>
-                        {deposit.status}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(deposit.created_at).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <span className="text-muted-foreground">Amount:</span>{' '}
-                        <span className="font-bold">{deposit.amount} {deposit.currency}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">Method:</span>{' '}
-                        <span className="font-medium">{deposit.method}</span>
-                      </div>
-                      <div>
-                        <span className="text-muted-foreground">User ID:</span>{' '}
-                        <span className="font-mono text-xs">{deposit.user_id}</span>
-                      </div>
-                      {deposit.reference && (
-                        <div>
-                          <span className="text-muted-foreground">Reference:</span>{' '}
-                          <span className="font-mono text-xs">{deposit.reference}</span>
-                        </div>
-                      )}
-                    </div>
-                    {deposit.notes && (
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">Notes:</span>{' '}
-                        <span>{deposit.notes}</span>
-                      </div>
-                    )}
-                    
-                    {/* Notes textarea */}
-                    <div className="pt-2">
-                      <Textarea
-                        placeholder="Add notes (optional)"
-                        value={notes[deposit.id] || ''}
-                        onChange={(e) => setNotes(prev => ({ ...prev, [deposit.id]: e.target.value }))}
-                        className="text-sm"
-                        rows={2}
-                      />
-                    </div>
-                  </div>
+          ))}
+        </div>
 
-                  <div className="flex flex-col gap-2 min-w-[140px]">
-                    {deposit.status === 'PENDING' && (
-                      <>
-                        <Button
-                          onClick={() => handleAction(deposit.id, 'confirm')}
-                          disabled={processingId === deposit.id}
-                          className="w-full"
-                          variant="default"
-                        >
-                          {processingId === deposit.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <>
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Confirm
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={() => handleAction(deposit.id, 'reject')}
-                          disabled={processingId === deposit.id}
-                          variant="destructive"
-                          className="w-full"
-                        >
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Reject
-                        </Button>
-                      </>
-                    )}
-                    {deposit.status === 'CONFIRMED' && (
-                      <Button
-                        onClick={() => handleAction(deposit.id, 'process')}
-                        disabled={processingId === deposit.id}
-                        className="w-full"
-                        variant="default"
-                      >
-                        {processingId === deposit.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <>
-                            <CheckCircle className="h-4 w-4 mr-2" />
-                            Process & Credit
-                          </>
-                        )}
-                      </Button>
-                    )}
+        <Tabs defaultValue="users">
+          <TabsList>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="trades">Trades</TabsTrigger>
+            <TabsTrigger value="disputes">Disputes</TabsTrigger>
+            <TabsTrigger value="announcements">Announcements</TabsTrigger>
+            <TabsTrigger value="logs">Audit logs</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="users" className="mt-4">
+            <Input placeholder="Search users…" value={search} onChange={e => setSearch(e.target.value)} className="mb-3 max-w-sm" />
+            <Card className="glass-card divide-y divide-border/40">
+              {filteredUsers.map(u => (
+                <div key={u.id} className="p-3 flex items-center justify-between gap-3">
+                  <div>
+                    <div className="font-medium">@{u.username} {u.verified && <Badge variant="outline" className="ml-2">Verified</Badge>} {u.suspended && <Badge variant="destructive" className="ml-2">Suspended</Badge>}</div>
+                    <div className="text-xs text-muted-foreground">Trades: {u.total_trades} · Rating: {Number(u.reputation_score).toFixed(1)}</div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="sm" variant="outline" onClick={() => toggleVerify(u)}>{u.verified ? 'Unverify' : 'Verify'}</Button>
+                    <Button size="sm" variant={u.suspended ? 'outline' : 'destructive'} onClick={() => toggleSuspend(u)}>{u.suspended ? 'Unsuspend' : 'Suspend'}</Button>
                   </div>
                 </div>
-              </Card>
-            ))
-          )}
-        </div>
+              ))}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="trades" className="mt-4">
+            <Card className="glass-card divide-y divide-border/40">
+              {tradesList.map(t => (
+                <div key={t.id} className="p-3 grid grid-cols-5 gap-3 items-center">
+                  <Badge>{t.status}</Badge>
+                  <div className="font-mono">{t.coin}</div>
+                  <div className="font-mono">{Number(t.crypto_amount).toFixed(8)}</div>
+                  <div className="font-mono">{Number(t.fiat_amount).toFixed(2)} {t.fiat_currency}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(t.created_at).toLocaleString()}</div>
+                </div>
+              ))}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="disputes" className="mt-4">
+            <Card className="glass-card divide-y divide-border/40">
+              {disputes.length === 0 && <div className="p-6 text-muted-foreground text-center">No disputes.</div>}
+              {disputes.map(d => (
+                <div key={d.id} className="p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Badge variant={d.status === 'resolved' ? 'outline' : 'destructive'}>{d.status}</Badge>
+                    <span className="text-xs text-muted-foreground">{new Date(d.created_at).toLocaleString()}</span>
+                  </div>
+                  <p className="text-sm">{d.reason}</p>
+                  {d.status !== 'resolved' && (
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => resolveDispute(d.id, 'Resolved in favor of buyer')}>Favor buyer</Button>
+                      <Button size="sm" variant="outline" onClick={() => resolveDispute(d.id, 'Resolved in favor of seller')}>Favor seller</Button>
+                    </div>
+                  )}
+                  {d.resolution && <p className="text-xs text-muted-foreground">Resolution: {d.resolution}</p>}
+                </div>
+              ))}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="announcements" className="mt-4 space-y-3">
+            <Card className="glass-card p-4 space-y-3">
+              <Label>Title</Label>
+              <Input value={annTitle} onChange={e => setAnnTitle(e.target.value)} maxLength={200} />
+              <Label>Body</Label>
+              <Textarea value={annBody} onChange={e => setAnnBody(e.target.value)} rows={5} maxLength={2000} />
+              <Button onClick={publishAnnouncement} className="bg-gradient-primary">Publish</Button>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="logs" className="mt-4">
+            <Card className="glass-card divide-y divide-border/40">
+              {logs.map(l => (
+                <div key={l.id} className="p-3 grid grid-cols-3 gap-3 text-sm">
+                  <div className="font-mono">{l.action}</div>
+                  <div className="text-muted-foreground truncate">{l.target_id ?? ''}</div>
+                  <div className="text-xs text-muted-foreground">{new Date(l.created_at).toLocaleString()}</div>
+                </div>
+              ))}
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </AppShell>
   );
 }
