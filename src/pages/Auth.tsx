@@ -7,6 +7,9 @@ import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Sparkles, Mail, Lock, User as UserIcon } from 'lucide-react';
 import { Navigate, useSearchParams, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
+
+const OG_IMAGE = 'https://bitbite.lovable.app/__l5e/assets-v1/714bc711-c4eb-4758-a428-5e20b3e7724e/og-bitbite.jpg';
 
 export default function Auth() {
   const { user, signIn, signUp, resetPassword } = useAuth();
@@ -36,6 +39,22 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-mesh flex items-center justify-center p-6">
+      <Helmet>
+        <title>Sign in or Create Account — BitBite</title>
+        <meta name="description" content="Sign in to BitBite or create a free account to start trading crypto peer-to-peer with verified users worldwide." />
+        <meta name="robots" content="noindex,follow" />
+        <link rel="canonical" href="https://bitbite.lovable.app/auth" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="BitBite" />
+        <meta property="og:title" content="Sign in or Create Account — BitBite" />
+        <meta property="og:description" content="Join BitBite to trade Bitcoin, Ethereum, USDT and Solana peer-to-peer." />
+        <meta property="og:url" content="https://bitbite.lovable.app/auth" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Sign in or Create Account — BitBite" />
+        <meta name="twitter:description" content="Join BitBite to trade Bitcoin, Ethereum, USDT and Solana peer-to-peer." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+      </Helmet>
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8 font-display text-xl font-bold">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
