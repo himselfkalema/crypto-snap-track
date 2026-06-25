@@ -1,9 +1,12 @@
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { AppShell } from '@/components/layout/AppShell';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, ShieldCheck, Zap, Star, Users, Globe, TrendingUp, Sparkles, Check } from 'lucide-react';
+
+const OG_IMAGE = 'https://bitbite.lovable.app/__l5e/assets-v1/714bc711-c4eb-4758-a428-5e20b3e7724e/og-bitbite.jpg';
 
 const sampleOffers = [
   { type: 'buy', coin: 'BTC', price: 67432.10, trader: 'cryptoking', rating: 4.9, trades: 1247, method: 'Bank Transfer' },
@@ -37,6 +40,21 @@ const plans = [
 export default function Landing() {
   return (
     <AppShell>
+      <Helmet>
+        <title>BitBite — Buy & Sell Crypto Securely | P2P Marketplace</title>
+        <meta name="description" content="Trade Bitcoin, Ethereum, USDT and Solana peer-to-peer on BitBite. Real-time offers, verified traders, and secure escrow — start trading in minutes." />
+        <link rel="canonical" href="https://bitbite.lovable.app/" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="BitBite" />
+        <meta property="og:title" content="BitBite — Buy & Sell Crypto Securely" />
+        <meta property="og:description" content="Real-time P2P marketplace for Bitcoin, Ethereum, USDT, Solana and more." />
+        <meta property="og:url" content="https://bitbite.lovable.app/" />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="BitBite — Buy & Sell Crypto Securely" />
+        <meta name="twitter:description" content="Real-time P2P marketplace for Bitcoin, Ethereum, USDT, Solana and more." />
+        <meta name="twitter:image" content={OG_IMAGE} />
+      </Helmet>
       {/* HERO */}
       <section className="relative overflow-hidden">
         <div className="container py-20 md:py-32 text-center relative z-10">
