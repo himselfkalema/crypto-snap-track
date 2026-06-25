@@ -28,7 +28,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="hidden sm:inline">Crypto Snap Track</span>
+            <span className="hidden sm:inline">BitBite</span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-1">
@@ -106,7 +106,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <footer className="border-t border-border/40 mt-24 py-8 text-center text-sm text-muted-foreground">
         <div className="container">
-          © {new Date().getFullYear()} Crypto Snap Track. Trade Crypto With Confidence.
+          © {new Date().getFullYear()} BitBite. Trade Crypto With Confidence.
         </div>
       </footer>
     </div>

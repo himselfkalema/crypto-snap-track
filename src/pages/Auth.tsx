@@ -41,7 +41,7 @@ export default function Auth() {
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
             <Sparkles className="h-5 w-5" />
           </div>
-          Crypto Snap Track
+          BitBite
         </Link>
 
         <Card className="p-8 glass-strong">
