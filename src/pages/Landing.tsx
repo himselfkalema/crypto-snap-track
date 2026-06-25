@@ -113,7 +113,7 @@ export default function Landing() {
       {/* WHY */}
       <section className="container py-20">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-display font-bold">Why choose Crypto Snap Track</h2>
+          <h2 className="text-3xl md:text-4xl font-display font-bold">Why choose BitBite</h2>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
           {features.map(f => (

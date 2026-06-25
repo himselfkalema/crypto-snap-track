@@ -6,7 +6,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CryptoSnapTrack Design System - Modern Glassmorphism
+/* BitBite Design System - Modern Glassmorphism
    Primary: Deep Navy (#1E1E2F)
    Accent: Electric Blue (#3B82F6)
    All colors in HSL format
@@ -118,7 +118,7 @@
   }
 
   .dark {
-    /* Dark mode - CryptoSnapTrack signature look */
+    /* Dark mode - BitBite signature look */
     --background: 233 25% 8%;
     --foreground: 220 15% 95%;
 
