@@ -71,6 +71,136 @@ export type Database = {
         }
         Relationships: []
       }
+      bot_runs: {
+        Row: {
+          action: string
+          bot_id: string
+          id: string
+          market_price: number | null
+          new_price: number | null
+          note: string | null
+          ran_at: string
+        }
+        Insert: {
+          action: string
+          bot_id: string
+          id?: string
+          market_price?: number | null
+          new_price?: number | null
+          note?: string | null
+          ran_at?: string
+        }
+        Update: {
+          action?: string
+          bot_id?: string
+          id?: string
+          market_price?: number | null
+          new_price?: number | null
+          note?: string | null
+          ran_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bot_runs_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bots: {
+        Row: {
+          auto_reply: string | null
+          available_amount: number
+          coin: string
+          consecutive_errors: number
+          country: string | null
+          created_at: string
+          daily_volume: number
+          daily_volume_reset_at: string
+          fiat_currency: string
+          id: string
+          last_error: string | null
+          last_market_price: number | null
+          last_run_at: string | null
+          margin_pct: number
+          max_amount: number
+          min_amount: number
+          name: string
+          offer_id: string | null
+          pause_reason: string | null
+          payment_methods: string[]
+          side: Database["public"]["Enums"]["offer_type"]
+          status: string
+          terms: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_reply?: string | null
+          available_amount: number
+          coin: string
+          consecutive_errors?: number
+          country?: string | null
+          created_at?: string
+          daily_volume?: number
+          daily_volume_reset_at?: string
+          fiat_currency?: string
+          id?: string
+          last_error?: string | null
+          last_market_price?: number | null
+          last_run_at?: string | null
+          margin_pct?: number
+          max_amount: number
+          min_amount: number
+          name: string
+          offer_id?: string | null
+          pause_reason?: string | null
+          payment_methods?: string[]
+          side: Database["public"]["Enums"]["offer_type"]
+          status?: string
+          terms?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_reply?: string | null
+          available_amount?: number
+          coin?: string
+          consecutive_errors?: number
+          country?: string | null
+          created_at?: string
+          daily_volume?: number
+          daily_volume_reset_at?: string
+          fiat_currency?: string
+          id?: string
+          last_error?: string | null
+          last_market_price?: number | null
+          last_run_at?: string | null
+          margin_pct?: number
+          max_amount?: number
+          min_amount?: number
+          name?: string
+          offer_id?: string | null
+          pause_reason?: string | null
+          payment_methods?: string[]
+          side?: Database["public"]["Enums"]["offer_type"]
+          status?: string
+          terms?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bots_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dispute_evidence: {
         Row: {
           created_at: string
@@ -207,12 +337,14 @@ export type Database = {
       offers: {
         Row: {
           available_amount: number
+          bot_id: string | null
           coin: string
           country: string | null
           created_at: string
           featured: boolean
           fiat_currency: string
           id: string
+          is_bot: boolean
           max_trade: number
           min_trade: number
           payment_methods: string[]
@@ -225,12 +357,14 @@ export type Database = {
         }
         Insert: {
           available_amount: number
+          bot_id?: string | null
           coin: string
           country?: string | null
           created_at?: string
           featured?: boolean
           fiat_currency?: string
           id?: string
+          is_bot?: boolean
           max_trade: number
           min_trade: number
           payment_methods?: string[]
@@ -243,12 +377,14 @@ export type Database = {
         }
         Update: {
           available_amount?: number
+          bot_id?: string | null
           coin?: string
           country?: string | null
           created_at?: string
           featured?: boolean
           fiat_currency?: string
           id?: string
+          is_bot?: boolean
           max_trade?: number
           min_trade?: number
           payment_methods?: string[]
@@ -259,7 +395,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "offers_bot_id_fkey"
+            columns: ["bot_id"]
+            isOneToOne: false
+            referencedRelation: "bots"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
