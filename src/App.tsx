@@ -18,6 +18,9 @@ import Notifications from "./pages/Notifications";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
+import Bots from "./pages/Bots";
+import NewBot from "./pages/NewBot";
+import BotDetail from "./pages/BotDetail";
 
 const queryClient = new QueryClient();
 
