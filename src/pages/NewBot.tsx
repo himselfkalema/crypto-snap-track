@@ -50,7 +50,7 @@ export default function NewBot() {
       user_id: user.id,
       name: form.name.trim(),
       coin: form.coin,
-      side: form.side,
+      side: form.side as 'buy' | 'sell',
       fiat_currency: form.fiat_currency,
       payment_methods: [form.payment_method],
       margin_pct: margin,
