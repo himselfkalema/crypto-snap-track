@@ -9,12 +9,13 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import {
   LayoutDashboard, Store, Wallet, PieChart, History, MessageSquare, Bell, Trophy, Users2, Award,
-  CreditCard, LifeBuoy, Settings, ShieldCheck, Menu, Sparkles, Moon, Sun, Plus,
+  CreditCard, LifeBuoy, Settings, ShieldCheck, Menu, Sparkles, Moon, Sun, Plus, Bot,
 } from 'lucide-react';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, auth: true },
   { to: '/marketplace', label: 'Marketplace', icon: Store },
+  { to: '/bots', label: 'Bots', icon: Bot, auth: true },
   { to: '/portfolio', label: 'Portfolio', icon: PieChart, auth: true },
   { to: '/wallet', label: 'Wallet', icon: Wallet, auth: true },
   { to: '/trades', label: 'Trade History', icon: History, auth: true },
@@ -27,6 +28,7 @@ const nav = [
   { to: '/support', label: 'Support', icon: LifeBuoy },
   { to: '/settings', label: 'Settings', icon: Settings, auth: true },
 ];
+
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { user } = useAuth();
