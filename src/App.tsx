@@ -36,6 +36,9 @@ const App = () => (
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/dashboard" element={<ComingSoon title="Dashboard" description="Portfolio summary, live markets, trending coins, watchlist, sentiment and news — arriving in Phase 5." />} />
           <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/bots" element={<Bots />} />
+          <Route path="/bots/new" element={<NewBot />} />
+          <Route path="/bots/:id" element={<BotDetail />} />
           <Route path="/offers/new" element={<NewOffer />} />
           <Route path="/offers/:id" element={<OfferDetail />} />
           <Route path="/portfolio" element={<ComingSoon title="Portfolio" description="Self-reported holdings with live P/L. Arriving in Phase 5." />} />
