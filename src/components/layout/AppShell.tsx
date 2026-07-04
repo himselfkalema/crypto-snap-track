@@ -86,9 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-border/40 backdrop-blur-xl bg-background/70">
           <div className="container flex h-16 items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
-              <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">
-                <Sparkles className="h-4 w-4" />
-              </div>
+              <Logo className="h-9 w-9" />
               <span>BitBite</span>
             </Link>
             <div className="hidden md:flex items-center gap-1">
