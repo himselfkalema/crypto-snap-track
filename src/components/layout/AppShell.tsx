@@ -150,9 +150,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   </SheetTrigger>
                   <SheetContent side="left" className="p-0 w-72">
                     <div className="flex h-16 items-center gap-2 px-6 border-b border-border/40">
-                      <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
+                      <Logo className="h-8 w-8" />
                       <span className="font-display font-bold">BitBite</span>
                     </div>
                     <SidebarNav />
