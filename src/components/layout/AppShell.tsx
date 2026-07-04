@@ -123,9 +123,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <aside className="hidden lg:flex sticky top-0 h-screen w-64 shrink-0 flex-col border-r border-border/40 bg-sidebar/60 backdrop-blur-xl">
           <div className="flex h-16 items-center gap-2 px-6 border-b border-border/40">
             <Link to="/dashboard" className="flex items-center gap-2 font-display text-lg font-bold">
-              <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-primary text-primary-foreground">
-                <Sparkles className="h-4 w-4" />
-              </div>
+              <Logo className="h-9 w-9" />
               <span>BitBite</span>
             </Link>
           </div>
