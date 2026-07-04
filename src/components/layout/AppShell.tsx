@@ -87,7 +87,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="container flex h-16 items-center justify-between gap-4">
             <Link to="/" className="flex items-center gap-2 font-display text-lg font-bold">
               <Logo className="h-9 w-9" />
-              <span>BitBite</span>
             </Link>
             <div className="hidden md:flex items-center gap-1">
               <NavLink to="/marketplace" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60">Marketplace</NavLink>
@@ -124,7 +123,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex h-16 items-center gap-2 px-6 border-b border-border/40">
             <Link to="/dashboard" className="flex items-center gap-2 font-display text-lg font-bold">
               <Logo className="h-9 w-9" />
-              <span>BitBite</span>
             </Link>
           </div>
           <div className="flex-1 overflow-y-auto">
@@ -151,13 +149,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <SheetContent side="left" className="p-0 w-72">
                     <div className="flex h-16 items-center gap-2 px-6 border-b border-border/40">
                       <Logo className="h-8 w-8" />
-                      <span className="font-display font-bold">BitBite</span>
                     </div>
                     <SidebarNav />
                   </SheetContent>
                 </Sheet>
                 <Link to="/dashboard" className="lg:hidden flex items-center gap-2 font-display font-bold">
-                  <span>BitBite</span>
+                  <Logo className="h-7 w-7" />
                 </Link>
               </div>
 
