@@ -9,8 +9,9 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import {
   LayoutDashboard, Store, Wallet, PieChart, History, MessageSquare, Bell, Trophy, Users2, Award,
-  CreditCard, LifeBuoy, Settings, ShieldCheck, Menu, Sparkles, Moon, Sun, Plus, Bot,
+  CreditCard, LifeBuoy, Settings, ShieldCheck, Menu, Moon, Sun, Plus, Bot,
 } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 
 const nav = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, auth: true },
