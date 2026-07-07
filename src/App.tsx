@@ -16,6 +16,7 @@ import Settings from "./pages/Settings";
 import Pricing from "./pages/Pricing";
 import Notifications from "./pages/Notifications";
 import Admin from "./pages/Admin";
+import AdminLogin from "./pages/AdminLogin";
 import NotFound from "./pages/NotFound";
 import ComingSoon from "./pages/ComingSoon";
 import Bots from "./pages/Bots";
