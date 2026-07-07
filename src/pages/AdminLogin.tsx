@@ -81,7 +81,7 @@ export default function AdminLogin() {
     // Check MFA factors.
     const { data: factors } = await supabase.auth.mfa.listFactors();
     const verified = factors?.totp?.find((f) => f.status === 'verified');
-    const unverified = factors?.totp?.find((f) => f.status === 'unverified');
+    const unverified = factors?.totp?.find((f) => (f.status as string) !== 'verified');
 
     if (!verified) {
       // Force enrollment. Clean up any dangling unverified factor first.
