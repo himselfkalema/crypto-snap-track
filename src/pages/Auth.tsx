@@ -58,10 +58,7 @@ export default function Auth() {
       </Helmet>
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8 font-display text-xl font-bold">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          BitBite
+          <Logo className="h-10 w-10" />
         </Link>
 
         <Card className="p-8 glass-strong">
