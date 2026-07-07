@@ -30,6 +30,17 @@ async function fetchMarketPrice(coin: string, supabase: any): Promise<number> {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
 
+  // Require shared secret — this function uses the service-role key to mutate
+  // data across all users and must never be callable by arbitrary public callers.
+  const expected = Deno.env.get('CRON_SECRET');
+  const provided = req.headers.get('x-cron-secret') ?? '';
+  if (!expected || provided.length !== expected.length || provided !== expected) {
+    return new Response(JSON.stringify({ error: 'unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
