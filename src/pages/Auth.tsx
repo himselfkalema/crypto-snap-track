@@ -5,7 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Sparkles, Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Mail, Lock, User as UserIcon } from 'lucide-react';
+import { Logo } from '@/components/Logo';
 import { Navigate, useSearchParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 
@@ -57,10 +58,7 @@ export default function Auth() {
       </Helmet>
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2 mb-8 font-display text-xl font-bold">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
-            <Sparkles className="h-5 w-5" />
-          </div>
-          BitBite
+          <Logo className="h-10 w-10" />
         </Link>
 
         <Card className="p-8 glass-strong">
