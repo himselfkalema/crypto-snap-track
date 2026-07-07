@@ -8,3 +8,13 @@ verify_jwt = false
 
 [functions.bot-tick]
 verify_jwt = false
+
+[functions.admin-log-attempt]
+verify_jwt = false
+
+[functions.admin-verify]
+verify_jwt = true
+
+[functions.admin-suspend-user]
+verify_jwt = true
+
