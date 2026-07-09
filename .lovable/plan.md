@@ -1,65 +1,84 @@
-# Market-Maker Offer Bots
+## Goal
+Close the functional gaps that block a real P2P trade from start to finish. Four phases, shipped in order. Each phase leaves the app in a working state; you can stop or reorder between phases.
 
-Automated bots that keep a user's buy/sell offers priced against live market rate (via `coincap-proxy`) with a margin, auto-pausing when unsafe.
+---
 
-## Tier limits (strict)
+## Phase 1 — User Auth Hardening
 
-| Plan    | Active bots | Refresh interval | Daily volume cap |
-|---------|-------------|------------------|------------------|
-| Free    | 1           | 5 min            | $200             |
-| Pro     | 3           | 1 min            | $2,000           |
-| Premium | 10          | 20 sec           | $20,000          |
+Make regular-user accounts trustworthy before any money moves.
 
-Hard safety: auto-pause after 2 disputes in 24h, on 3 consecutive failed price fetches, or if margin would push price >20% off market.
+- Enable **HIBP leaked-password check** on signup / password change.
+- Enforce **email verification** before a user can create an offer, open a trade, or run a bot (gate in UI + server-side check in the trade/offer/bot edge paths).
+- **Optional TOTP** for regular users: enroll flow in Settings → Security, badge on profile.
+- **Account lockout**: reuse `admin_login_attempts` pattern with a `user_login_attempts` table + edge function; lock for 15 min after 5 failed attempts.
+- **Session policy for users**: 30 day absolute, refresh rotation on; "Sign out everywhere" button in Settings.
+- Rename generic `Auth.tsx` copy, add password strength meter, add "resend verification email".
 
-## Data model (one migration)
+Deliverable: verified email + strong password required before trading; 2FA available.
 
-- `bots` — user_id, coin, side (buy/sell), fiat_currency, payment_method, margin_pct, min_amount, max_amount, terms, auto_reply, status (active/paused/stopped), pause_reason, offer_id (FK to `offers`), daily_volume, last_run_at, last_error, created_at, updated_at.
-- `bot_runs` — bot_id, ran_at, market_price, new_price, action (created/updated/skipped/paused), note.
-- Extend `offers`: `bot_id uuid null`, `is_bot boolean default false`.
+---
 
-RLS: owner-only CRUD on `bots`; `bot_runs` read-only to owner + admin; edge function uses service role. Full GRANTs per public-schema rules.
+## Phase 2 — RLS + AuthZ Sweep
 
-## Backend
+Lock every table down to the minimum policy that still lets the app work.
 
-- Edge function `bot-tick` (verify_jwt=false, service role): every minute, selects bots due for refresh based on tier interval, fetches CoinCap price, recomputes offer price = market × (1 ± margin), updates or (re)creates the linked `offers` row, enforces caps/safety, writes `bot_runs`, updates `daily_volume` (resets nightly).
-- Scheduled via `pg_cron` + `pg_net` → hits `bot-tick` every minute.
-- Nightly cron resets `daily_volume` and clears stale pause reasons.
+- Add roles: `verified_user`, `moderator` (in `app_role` enum). `has_role()` already exists.
+- Re-audit every public table (offers, trades, trade_messages, disputes, dispute_evidence, bots, bot_runs, reviews, notifications, payments, subscriptions, announcements, feature_flags). One doc listing each policy + intended actor.
+- Add `trades_guard_insert` trigger (mirrors the existing `trades_validate_insert` but also blocks self-trading, suspended users, unverified users).
+- Add `audit_logs` writes on: role grant/revoke, offer feature toggle, dispute resolution, subscription plan change, wallet debits.
+- **Server-side rate limits** on public edge functions (`admin-log-attempt`, `coincap-proxy`, future `create-trade`, `bot-tick`) via a shared `rate_limit(key, window, max)` helper backed by a `rate_limits` table.
+- Fix the linter warnings from the last migration (SECURITY DEFINER functions with public EXECUTE) by revoking EXECUTE from `anon`/`authenticated` on the guard/validation triggers — they only need to run as triggers, not as callable RPCs.
 
-## Frontend
+Deliverable: no table is over-permissive; sensitive actions are logged; abusive clients get 429s.
 
-- New route `/bots` in `AppShell` sidebar ("Bots" with Bot icon, Premium sparkle when limits apply).
-- `Bots.tsx`: list of user's bots with status pill, live P/L badge, quick pause/resume/stop, "New bot" CTA. Shows tier usage (e.g. "2 / 3 active — Pro").
-- `NewBot.tsx`: wizard — coin, side, margin %, amount range, payment method, fiat, terms, auto-reply message. Live price preview + effective offer price.
-- `BotDetail.tsx`: run history table from `bot_runs`, chart of applied price vs market (recharts), linked offer card, controls.
-- Marketplace offer cards get a small "Bot" badge when `is_bot`.
-- Tier gating via existing `subscriptions` table; upgrade CTA links to `/pricing`.
+---
 
-## Safety UX
+## Phase 3 — Trade Lifecycle & Escrow
 
-- Dispute auto-pause surfaces a red banner with reason and one-click resume (only after user acknowledgment).
-- Global kill switch in Admin → new "Bots" tab: list, force-stop, view runs, ban user's bots.
+Currently a trade row exists but there is no escrow, no dispute UI, no auto-cancel, no post-trade review prompt.
 
-## Notifications
+- **Escrow ledger**: `wallet_balances` and `wallet_ledger` tables + `debit_wallet_if_enough(user_id, coin, amount, reason, ref)` RPC (atomic, SECURITY DEFINER). Trade creation for a `sell` offer moves seller's crypto from `available` → `escrow`; `completed` moves escrow → buyer's available; `cancelled` refunds.
+- **Trade room polish**: countdown to `expires_at`, "I've paid" (buyer) → "Release crypto" (seller) → "Open dispute" buttons wired to the status transitions the trigger already allows.
+- **Auto-cancel on expiry**: cron edge function `trade-expire-tick` runs every minute, cancels `pending`/`payment_sent` trades past `expires_at`, refunds escrow, notifies both parties.
+- **Disputes UI**: `/disputes/:id` page for participants + moderator queue in Admin, evidence uploads to a new `dispute-evidence` storage bucket (private, RLS on `dispute_evidence` table).
+- **Reviews**: after `completed`, prompt both parties once; write to `reviews`; recompute `profiles.reputation_score`/`total_trades`/`successful_trades` in a trigger.
+- **Notifications**: DB-backed `notifications` rows on every state change; bell badge already exists — wire it up with realtime subscription.
 
-- New categories: `bot_paused`, `bot_trade_started`, `bot_daily_cap_hit`. Piggy-back on existing `notifications` table + Realtime.
+Deliverable: two users can complete a full trade including a dispute path, with escrow guarantees.
 
-## Out of scope (v1)
+---
 
-- No auto-accepting incoming trades; bots only manage offer pricing/availability. Human still confirms every trade in the Trade Room.
-- No custody, no automated fiat/crypto transfers.
+## Phase 4 — Payments & Payouts
 
-## Technical notes
+Turn the subscription and mobile-money plumbing into a shipped flow.
 
-- Price source: existing `coincap-proxy` edge function (cached 15s in `bot-tick` memory to save calls).
-- Concurrency: `bot-tick` uses `SELECT ... FOR UPDATE SKIP LOCKED` on due bots so overlapping ticks don't double-run.
-- All new `public` tables ship with GRANTs + RLS + policies in the same migration.
-- Realtime enabled on `bots` so the UI reflects pauses instantly.
-- Tier lookups via existing `subscriptions.plan`.
+- **Lemon Squeezy subscriptions**: finish `lemon-webhook` (verify signature, upsert `subscriptions` row, handle `subscription_created/updated/cancelled/expired`). Pricing page → checkout → success page. Enforce plan limits (bots trigger already exists; add offer limit + withdraw-skip counter).
+- **MTN / Airtel disbursements**: `create-withdrawal` edge function → validates KYC + balance → inserts `payments` row `status=queued` → background `payout-tick` calls MTN/Airtel disbursement API → updates status from webhook. Apply the **35% fee** server-side, never client-side.
+- **Withdraw-skip** (Premium only): checkbox in the withdraw form; decrements a monthly counter on `subscriptions`; bypasses queue by calling disbursement API immediately.
+- **Transaction history** UI at `/wallet` with filters (deposit / withdraw / trade / subscription).
+- **Webhook signature verification** for every provider; store raw payload in `payments.metadata`.
 
-## Phasing
+Deliverable: user can subscribe, earn crypto in escrow, and cash out to mobile money with correct fees.
 
-1. Migration (`bots`, `bot_runs`, offer columns, RLS, cron).
-2. `bot-tick` edge function + cron wiring.
-3. `/bots`, `/bots/new`, `/bots/:id` UI + sidebar entry.
-4. Marketplace badge + notifications + Admin tab.
+---
+
+## Cross-cutting (drip into every phase)
+
+- Empty / loading / error states on every page you touch.
+- Mobile layout pass on the pages you touch.
+- Add `og:image`, canonical, and per-page titles as you add routes.
+- Every new edge function: zod-validated input, CORS, 400 on bad input, structured error.
+
+---
+
+## Suggested order for the next few turns
+
+1. Phase 1 — HIBP + email-verified gate + user TOTP (one turn).
+2. Phase 1 — lockout + session controls (one turn).
+3. Phase 2 — RLS sweep + rate-limit helper + fix linter warnings (one turn).
+4. Phase 3 — escrow ledger + trade room actions (one turn).
+5. Phase 3 — disputes + reviews + notifications realtime (one turn).
+6. Phase 4 — Lemon Squeezy end-to-end (one turn).
+7. Phase 4 — MTN/Airtel payouts + withdraw-skip + wallet history (one turn).
+
+Approve to start with turn 1 (HIBP + email-verified gate + user TOTP), or tell me to reorder.

@@ -12,8 +12,10 @@ import { Helmet } from 'react-helmet-async';
 
 const OG_IMAGE = 'https://bitbite.lovable.app/__l5e/assets-v1/714bc711-c4eb-4758-a428-5e20b3e7724e/og-bitbite.jpg';
 
+import { PasswordStrength, scorePassword } from '@/components/PasswordStrength';
+
 export default function Auth() {
-  const { user, signIn, signUp, resetPassword } = useAuth();
+  const { user, signIn, signUp, resetPassword, resendVerification } = useAuth();
   const [params] = useSearchParams();
   const defaultTab = params.get('tab') === 'signup' ? 'signup' : 'signin';
 
@@ -101,9 +103,19 @@ export default function Auth() {
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'Signing in…' : 'Sign in'}
                   </Button>
-                  <button type="button" className="text-sm text-muted-foreground hover:text-foreground" onClick={() => setShowReset(true)}>
-                    Forgot password?
-                  </button>
+                  <div className="flex items-center justify-between text-sm">
+                    <button type="button" className="text-muted-foreground hover:text-foreground" onClick={() => setShowReset(true)}>
+                      Forgot password?
+                    </button>
+                    <button
+                      type="button"
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => email ? resendVerification(email) : null}
+                      disabled={!email}
+                    >
+                      Resend verification
+                    </button>
+                  </div>
                 </form>
               </TabsContent>
 
@@ -129,12 +141,13 @@ export default function Auth() {
                       <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                       <Input id="su-pw" type="password" required minLength={8} value={password} onChange={e => setPassword(e.target.value)} className="pl-10" />
                     </div>
+                    <PasswordStrength password={password} />
                   </div>
-                  <Button type="submit" className="w-full" disabled={loading || password.length < 8}>
+                  <Button type="submit" className="w-full" disabled={loading || scorePassword(password).score < 2}>
                     {loading ? 'Creating…' : 'Create account'}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center">
-                    You'll receive a confirmation email — verify to start trading.
+                    Passwords are checked against known breach lists. You'll receive a confirmation email — verify to start trading.
                   </p>
                 </form>
               </TabsContent>

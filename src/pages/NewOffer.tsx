@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { SUPPORTED_COINS, PAYMENT_METHODS, COUNTRIES } from '@/lib/coins';
+import { VerifiedGate } from '@/components/VerifiedGate';
 import { toast } from 'sonner';
 
 const schema = z.object({
@@ -82,8 +83,9 @@ export default function NewOffer() {
 
   return (
     <AppShell>
-      <div className="container py-8 max-w-2xl">
-        <h1 className="text-3xl font-display font-bold mb-6">Create offer</h1>
+      <div className="container py-8 max-w-2xl space-y-4">
+        <h1 className="text-3xl font-display font-bold">Create offer</h1>
+        <VerifiedGate action="create an offer">
         <Card className="glass-card p-6">
           <form onSubmit={submit} className="space-y-5">
             <Tabs value={type} onValueChange={(v) => setType(v as any)}>
@@ -157,6 +159,7 @@ export default function NewOffer() {
             </Button>
           </form>
         </Card>
+        </VerifiedGate>
       </div>
     </AppShell>
   );
