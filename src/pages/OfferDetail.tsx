@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Star, ShieldCheck } from 'lucide-react';
+import { VerifiedGate } from '@/components/VerifiedGate';
 import { toast } from 'sonner';
 
 export default function OfferDetail() {
@@ -121,15 +122,19 @@ export default function OfferDetail() {
 
           {isOwn ? (
             <p className="text-sm text-muted-foreground">This is your own offer. Manage it from your dashboard.</p>
+          ) : !user ? (
+            <Button onClick={() => navigate('/auth')} className="w-full bg-gradient-primary">
+              Sign in to trade
+            </Button>
           ) : (
-            <>
+            <VerifiedGate action="start a trade">
               <div className="space-y-2">
                 <Label>Amount in {offer.fiat_currency}</Label>
                 <Input type="number" step="any" value={fiatAmount} onChange={e => setFiatAmount(e.target.value)}
                   placeholder={`${offer.min_trade} – ${offer.max_trade}`} />
                 {fiatAmount && <p className="text-xs text-muted-foreground">≈ {cryptoAmount.toFixed(8)} {offer.coin}</p>}
               </div>
-              <div className="space-y-2">
+              <div className="space-y-2 mt-3">
                 <Label>Payment method</Label>
                 <Select value={paymentMethod} onValueChange={setPaymentMethod}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
@@ -138,10 +143,10 @@ export default function OfferDetail() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={startTrade} disabled={submitting} className="w-full bg-gradient-primary">
+              <Button onClick={startTrade} disabled={submitting} className="w-full bg-gradient-primary mt-4">
                 {submitting ? 'Starting…' : (offer.type === 'buy' ? `Sell ${offer.coin}` : `Buy ${offer.coin}`)}
               </Button>
-            </>
+            </VerifiedGate>
           )}
         </Card>
       </div>

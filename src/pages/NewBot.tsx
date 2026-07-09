@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SUPPORTED_COINS, PAYMENT_METHODS } from '@/lib/coins';
+import { VerifiedGate } from '@/components/VerifiedGate';
 import { toast } from 'sonner';
 
 export default function NewBot() {
@@ -72,6 +73,7 @@ export default function NewBot() {
       <div className="container max-w-2xl py-8 space-y-6">
         <h1 className="text-2xl font-display font-bold">New market-maker bot</h1>
 
+        <VerifiedGate action="run a bot">
         <Card className="glass-card p-6 space-y-4">
           <div>
             <Label>Name</Label>
@@ -153,6 +155,7 @@ export default function NewBot() {
             <Button className="bg-gradient-primary" onClick={submit} disabled={submitting}>Create bot</Button>
           </div>
         </Card>
+        </VerifiedGate>
       </div>
     </AppShell>
   );

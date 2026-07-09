@@ -12,6 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { COUNTRIES } from '@/lib/coins';
 import { Badge } from '@/components/ui/badge';
+import { TotpCard } from '@/components/settings/TotpCard';
+import { VerifiedGate } from '@/components/VerifiedGate';
 import { toast } from 'sonner';
 
 export default function Settings() {
@@ -51,6 +53,8 @@ export default function Settings() {
     <AppShell>
       <div className="container py-8 max-w-2xl space-y-6">
         <h1 className="text-3xl font-display font-bold">Settings</h1>
+
+        <VerifiedGate action="unlock trading">{null}</VerifiedGate>
 
         <Card className="glass-card p-6 space-y-4">
           <h2 className="font-semibold">Profile</h2>
@@ -95,6 +99,8 @@ export default function Settings() {
             <p className="text-sm text-muted-foreground">Loading…</p>
           )}
         </Card>
+
+        <TotpCard />
 
         <Card className="glass-card p-6 space-y-3">
           <h2 className="font-semibold">Account</h2>
