@@ -63,5 +63,18 @@ export function useAuth() {
     return { error };
   }, [toast]);
 
-  return { user, session, loading, signUp, signIn, signOut, resetPassword };
+  const resendVerification = useCallback(async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/` },
+    });
+    if (error) toast({ variant: 'destructive', title: 'Could not resend', description: error.message });
+    else toast({ title: 'Verification email sent', description: `Check ${email} for the confirmation link.` });
+    return { error };
+  }, [toast]);
+
+  const emailVerified = !!user?.email_confirmed_at;
+
+  return { user, session, loading, signUp, signIn, signOut, resetPassword, resendVerification, emailVerified };
 }
