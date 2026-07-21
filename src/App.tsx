@@ -22,6 +22,7 @@ import ComingSoon from "./pages/ComingSoon";
 import Bots from "./pages/Bots";
 import NewBot from "./pages/NewBot";
 import BotDetail from "./pages/BotDetail";
+import Wallet from "./pages/Wallet";
 
 const queryClient = new QueryClient();
 
