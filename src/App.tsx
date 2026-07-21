@@ -44,7 +44,7 @@ const App = () => (
           <Route path="/offers/new" element={<NewOffer />} />
           <Route path="/offers/:id" element={<OfferDetail />} />
           <Route path="/portfolio" element={<ComingSoon title="Portfolio" description="Self-reported holdings with live P/L. Arriving in Phase 5." />} />
-          <Route path="/wallet" element={<ComingSoon title="Wallet" description="Linked read-only addresses. Arriving in Phase 5." />} />
+          <Route path="/wallet" element={<Wallet />} />
           <Route path="/trades" element={<Trades />} />
           <Route path="/trades/:id" element={<TradeRoom />} />
           <Route path="/messages" element={<ComingSoon title="Messages" description="Direct messages with attachments, typing indicators and read receipts. Arriving in Phase 7." />} />
