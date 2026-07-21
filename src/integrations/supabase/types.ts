@@ -753,17 +753,102 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_balances: {
+        Row: {
+          available: number
+          coin: string
+          escrow: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available?: number
+          coin: string
+          escrow?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available?: number
+          coin?: string
+          escrow?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_ledger: {
+        Row: {
+          coin: string
+          created_at: string
+          delta_available: number
+          delta_escrow: number
+          id: string
+          reason: string
+          ref_trade_id: string | null
+          user_id: string
+        }
+        Insert: {
+          coin: string
+          created_at?: string
+          delta_available?: number
+          delta_escrow?: number
+          id?: string
+          reason: string
+          ref_trade_id?: string | null
+          user_id: string
+        }
+        Update: {
+          coin?: string
+          created_at?: string
+          delta_available?: number
+          delta_escrow?: number
+          id?: string
+          reason?: string
+          ref_trade_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_ledger_ref_trade_id_fkey"
+            columns: ["ref_trade_id"]
+            isOneToOne: false
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_credit_wallet: {
+        Args: {
+          _amount: number
+          _coin: string
+          _reason?: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      wallet_move: {
+        Args: {
+          _coin: string
+          _delta_available: number
+          _delta_escrow: number
+          _reason: string
+          _ref_trade_id?: string
+          _user_id: string
+        }
+        Returns: undefined
       }
     }
     Enums: {
