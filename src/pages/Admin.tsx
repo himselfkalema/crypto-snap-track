@@ -281,7 +281,12 @@ export default function Admin() {
               ))}
             </Card>
           </TabsContent>
+
+          <TabsContent value="settings" className="mt-4">
+            <PlatformFeeCard actorId={session.userId!} onAudit={audit} />
+          </TabsContent>
         </Tabs>
+
       </div>
 
       <MfaChallengeDialog
