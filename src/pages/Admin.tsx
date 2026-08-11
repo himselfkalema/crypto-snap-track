@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminSession } from '@/hooks/useAdminSession';
 import { MfaChallengeDialog } from '@/components/admin/MfaChallengeDialog';
+import { PlatformFeeCard } from '@/components/admin/PlatformFeeCard';
+
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
