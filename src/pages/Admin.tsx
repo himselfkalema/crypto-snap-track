@@ -170,7 +170,9 @@ export default function Admin() {
             <TabsTrigger value="logins">Login attempts</TabsTrigger>
             <TabsTrigger value="actions">Admin actions</TabsTrigger>
             <TabsTrigger value="logs">Audit logs</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="users" className="mt-4">
             <Input placeholder="Search users…" value={search} onChange={e => setSearch(e.target.value)} className="mb-3 max-w-sm" />
