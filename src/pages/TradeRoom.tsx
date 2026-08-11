@@ -137,7 +137,10 @@ export default function TradeRoom() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Coin</span><span className="font-mono">{trade.coin}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Crypto</span><span className="font-mono">{Number(trade.crypto_amount).toFixed(8)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Platform fee ({Number(trade.fee_percentage ?? 0)}%)</span><span className="font-mono">{Number(trade.fee_amount ?? 0).toFixed(8)}</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">Buyer receives</span><span className="font-mono">{(Number(trade.crypto_amount) - Number(trade.fee_amount ?? 0)).toFixed(8)}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Fiat</span><span className="font-mono">{Number(trade.fiat_amount).toLocaleString()} {trade.fiat_currency}</span></div>
+
             <div className="flex justify-between"><span className="text-muted-foreground">Price</span><span className="font-mono">{Number(trade.price).toLocaleString()}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Method</span><span>{trade.payment_method}</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Role</span><span>{isBuyer ? 'Buyer' : 'Seller'}</span></div>
