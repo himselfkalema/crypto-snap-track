@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Star, ShieldCheck } from 'lucide-react';
 import { VerifiedGate } from '@/components/VerifiedGate';
+import { usePlatformFee } from '@/hooks/usePlatformFee';
+
 import { toast } from 'sonner';
 
 export default function OfferDetail() {
@@ -21,6 +23,8 @@ export default function OfferDetail() {
   const [fiatAmount, setFiatAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { feePct, loading: feeLoading } = usePlatformFee();
+
 
   useEffect(() => {
     supabase
@@ -34,10 +38,15 @@ export default function OfferDetail() {
   if (!offer) return <AppShell><div className="container py-12">Loading…</div></AppShell>;
 
   const cryptoAmount = Number(fiatAmount) / Number(offer.price);
+  const feeCrypto = feePct !== null ? (cryptoAmount * feePct) / 100 : 0;
+  const netCrypto = Math.max(0, cryptoAmount - feeCrypto);
   const isOwn = user?.id === offer.user_id;
 
+
   const startTrade = async () => {
+    if (submitting) return; // guards against duplicate trades on double-click
     if (!user) return navigate('/auth');
+
     const fa = Number(fiatAmount);
     if (!fa || fa < offer.min_trade || fa > offer.max_trade)
       return toast.error(`Amount must be between ${offer.min_trade} and ${offer.max_trade}`);
@@ -143,10 +152,35 @@ export default function OfferDetail() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={startTrade} disabled={submitting} className="w-full bg-gradient-primary mt-4">
+
+              {/* Fee disclosure — the authoritative fee is recomputed server-side on insert */}
+              <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3 space-y-1.5 text-sm">
+                {feeLoading ? (
+                  <p className="text-xs text-muted-foreground">Loading marketplace fee…</p>
+                ) : feePct === null ? (
+                  <p className="text-xs text-destructive">Marketplace fee unavailable — refresh before trading.</p>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Marketplace fee ({feePct}%)</span>
+                      <span className="font-mono">{feeCrypto.toFixed(8)} {offer.coin}</span>
+                    </div>
+                    <div className="flex justify-between font-medium">
+                      <span>Buyer receives</span>
+                      <span className="font-mono">{netCrypto.toFixed(8)} {offer.coin}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground pt-1">
+                      The fee is deducted from the crypto released to the buyer when the trade completes.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <Button onClick={startTrade} disabled={submitting || feeLoading} className="w-full bg-gradient-primary mt-4">
                 {submitting ? 'Starting…' : (offer.type === 'buy' ? `Sell ${offer.coin}` : `Buy ${offer.coin}`)}
               </Button>
             </VerifiedGate>
+
           )}
         </Card>
       </div>

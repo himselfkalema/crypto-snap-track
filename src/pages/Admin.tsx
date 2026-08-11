@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdminSession } from '@/hooks/useAdminSession';
 import { MfaChallengeDialog } from '@/components/admin/MfaChallengeDialog';
+import { PlatformFeeCard } from '@/components/admin/PlatformFeeCard';
+
 import { AppShell } from '@/components/layout/AppShell';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -170,7 +172,9 @@ export default function Admin() {
             <TabsTrigger value="logins">Login attempts</TabsTrigger>
             <TabsTrigger value="actions">Admin actions</TabsTrigger>
             <TabsTrigger value="logs">Audit logs</TabsTrigger>
+            <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
+
 
           <TabsContent value="users" className="mt-4">
             <Input placeholder="Search users…" value={search} onChange={e => setSearch(e.target.value)} className="mb-3 max-w-sm" />
@@ -279,7 +283,12 @@ export default function Admin() {
               ))}
             </Card>
           </TabsContent>
+
+          <TabsContent value="settings" className="mt-4">
+            <PlatformFeeCard actorId={session.userId!} onAudit={audit} />
+          </TabsContent>
         </Tabs>
+
       </div>
 
       <MfaChallengeDialog
