@@ -21,6 +21,8 @@ export default function OfferDetail() {
   const [fiatAmount, setFiatAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const { feePct, loading: feeLoading } = usePlatformFee();
+
 
   useEffect(() => {
     supabase
