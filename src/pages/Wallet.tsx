@@ -66,11 +66,22 @@ export default function Wallet() {
     <AppShell>
       <div className="container py-8 space-y-6">
         <div>
-          <h1 className="text-3xl font-bold">Wallet</h1>
+          <h1 className="text-3xl font-bold">Trade ledger</h1>
           <p className="text-muted-foreground text-sm mt-1">
-            Balances backing your trades. Escrow is locked while trades are pending.
+            Marketplace accounting for your trades. Escrow is locked while trades are pending.
           </p>
         </div>
+
+        {/* Financial safety: BitBite does not custody crypto yet — do not present these as on-chain funds. */}
+        <Card className="glass-card border-warning/40 p-4 text-sm">
+          <p className="font-semibold">BitBite is non-custodial</p>
+          <p className="text-muted-foreground mt-1">
+            These figures are marketplace trade records, not on-chain balances. BitBite does not
+            hold, transfer, or secure cryptocurrency on your behalf — settlement happens directly
+            between you and your counterparty. Deposits and withdrawals are not available.
+          </p>
+        </Card>
+
 
         {/* Balances */}
         {loadingData ? (
