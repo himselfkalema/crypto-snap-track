@@ -34,7 +34,10 @@ export default function OfferDetail() {
   if (!offer) return <AppShell><div className="container py-12">Loading…</div></AppShell>;
 
   const cryptoAmount = Number(fiatAmount) / Number(offer.price);
+  const feeCrypto = feePct !== null ? (cryptoAmount * feePct) / 100 : 0;
+  const netCrypto = Math.max(0, cryptoAmount - feeCrypto);
   const isOwn = user?.id === offer.user_id;
+
 
   const startTrade = async () => {
     if (!user) return navigate('/auth');
