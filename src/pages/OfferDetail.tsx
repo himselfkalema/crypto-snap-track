@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Star, ShieldCheck } from 'lucide-react';
 import { VerifiedGate } from '@/components/VerifiedGate';
+import { usePlatformFee } from '@/hooks/usePlatformFee';
+
 import { toast } from 'sonner';
 
 export default function OfferDetail() {
