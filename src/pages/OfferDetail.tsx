@@ -44,7 +44,9 @@ export default function OfferDetail() {
 
 
   const startTrade = async () => {
+    if (submitting) return; // guards against duplicate trades on double-click
     if (!user) return navigate('/auth');
+
     const fa = Number(fiatAmount);
     if (!fa || fa < offer.min_trade || fa > offer.max_trade)
       return toast.error(`Amount must be between ${offer.min_trade} and ${offer.max_trade}`);
