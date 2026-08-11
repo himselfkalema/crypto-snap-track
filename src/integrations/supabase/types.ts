@@ -507,6 +507,68 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_fees: {
+        Row: {
+          amount: number
+          coin: string
+          created_at: string
+          fiat_currency: string | null
+          fiat_value: number | null
+          id: string
+          trade_id: string
+        }
+        Insert: {
+          amount: number
+          coin: string
+          created_at?: string
+          fiat_currency?: string | null
+          fiat_value?: number | null
+          id?: string
+          trade_id: string
+        }
+        Update: {
+          amount?: number
+          coin?: string
+          created_at?: string
+          fiat_currency?: string | null
+          fiat_value?: number | null
+          id?: string
+          trade_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_fees_trade_id_fkey"
+            columns: ["trade_id"]
+            isOneToOne: true
+            referencedRelation: "trades"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_settings: {
+        Row: {
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+        }
+        Insert: {
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+        }
+        Update: {
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -676,6 +738,8 @@ export type Database = {
           created_at: string
           crypto_amount: number
           expires_at: string
+          fee_amount: number
+          fee_percentage: number
           fiat_amount: number
           fiat_currency: string
           id: string
@@ -694,6 +758,8 @@ export type Database = {
           created_at?: string
           crypto_amount: number
           expires_at?: string
+          fee_amount?: number
+          fee_percentage?: number
           fiat_amount: number
           fiat_currency: string
           id?: string
@@ -712,6 +778,8 @@ export type Database = {
           created_at?: string
           crypto_amount?: number
           expires_at?: string
+          fee_amount?: number
+          fee_percentage?: number
           fiat_amount?: number
           fiat_currency?: string
           id?: string
@@ -832,6 +900,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      get_platform_fee_pct: { Args: never; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
