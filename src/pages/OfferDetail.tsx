@@ -143,10 +143,35 @@ export default function OfferDetail() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={startTrade} disabled={submitting} className="w-full bg-gradient-primary mt-4">
+
+              {/* Fee disclosure — the authoritative fee is recomputed server-side on insert */}
+              <div className="mt-4 rounded-lg border border-border/60 bg-secondary/30 p-3 space-y-1.5 text-sm">
+                {feeLoading ? (
+                  <p className="text-xs text-muted-foreground">Loading marketplace fee…</p>
+                ) : feePct === null ? (
+                  <p className="text-xs text-destructive">Marketplace fee unavailable — refresh before trading.</p>
+                ) : (
+                  <>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Marketplace fee ({feePct}%)</span>
+                      <span className="font-mono">{feeCrypto.toFixed(8)} {offer.coin}</span>
+                    </div>
+                    <div className="flex justify-between font-medium">
+                      <span>Buyer receives</span>
+                      <span className="font-mono">{netCrypto.toFixed(8)} {offer.coin}</span>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground pt-1">
+                      The fee is deducted from the crypto released to the buyer when the trade completes.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <Button onClick={startTrade} disabled={submitting || feeLoading} className="w-full bg-gradient-primary mt-4">
                 {submitting ? 'Starting…' : (offer.type === 'buy' ? `Sell ${offer.coin}` : `Buy ${offer.coin}`)}
               </Button>
             </VerifiedGate>
+
           )}
         </Card>
       </div>
