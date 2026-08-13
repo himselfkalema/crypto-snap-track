@@ -6,97 +6,104 @@
 @tailwind components;
 @tailwind utilities;
 
-/* BitBite Design System - Modern Glassmorphism
-   Primary: Deep Navy (#1E1E2F)
-   Accent: Electric Blue (#3B82F6)
+/* BitBite Design System
+   Dark mode  : black + gold + blue
+   Light mode : white + gold + grey
    All colors in HSL format
 */
 
 @layer base {
   :root {
-    /* Light mode - clean professional look */
-    --background: 220 20% 97%;
-    --foreground: 233 20% 12%;
+    /* Light mode — white / grey / gold with blue as the action colour */
+    --background: 0 0% 100%;
+    --foreground: 220 18% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 233 20% 12%;
+    --card-foreground: 220 18% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 233 20% 12%;
+    --popover-foreground: 220 18% 12%;
 
-    --primary: 217 91% 60%;
+    --primary: 218 84% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 15% 92%;
-    --secondary-foreground: 233 20% 12%;
+    --secondary: 220 14% 95%;
+    --secondary-foreground: 220 18% 16%;
 
-    --muted: 220 15% 92%;
-    --muted-foreground: 220 10% 45%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 8% 42%;
 
-    --accent: 271 81% 56%;
+    --accent: 40 72% 44%;
     --accent-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;
+    /* Gold — the brand metal */
+    --gold: 41 72% 46%;
+    --gold-soft: 43 68% 60%;
+    --gold-foreground: 40 60% 8%;
+
+    --success: 152 58% 32%;
     --success-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 72% 47%;
     --destructive-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 233 20% 12%;
+    --warning: 38 88% 45%;
+    --warning-foreground: 40 60% 8%;
 
-    --border: 220 15% 88%;
-    --input: 220 15% 88%;
-    --ring: 217 91% 60%;
+    --border: 220 13% 89%;
+    --input: 220 13% 87%;
+    --ring: 218 84% 45%;
 
     /* Crypto-specific colors */
-    --crypto-green: 142 76% 36%;
-    --crypto-red: 0 84% 60%;
-    --crypto-blue: 217 91% 60%;
-    --crypto-purple: 271 81% 56%;
-    --crypto-orange: 25 95% 53%;
+    --crypto-green: 152 58% 32%;
+    --crypto-red: 0 72% 47%;
+    --crypto-blue: 218 84% 45%;
+    --crypto-purple: 41 72% 46%;
+    --crypto-orange: 30 85% 48%;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(271 81% 56%));
-    --gradient-secondary: linear-gradient(135deg, hsl(271 81% 56%), hsl(330 80% 60%));
-    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(180 70% 45%));
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.9), hsl(220 20% 97% / 0.7));
-    --gradient-hero: linear-gradient(180deg, hsl(220 20% 97%) 0%, hsl(217 91% 60% / 0.05) 50%, hsl(271 81% 56% / 0.05) 100%);
-    --gradient-mesh: radial-gradient(at 40% 20%, hsl(217 91% 60% / 0.15) 0px, transparent 50%),
-                     radial-gradient(at 80% 0%, hsl(271 81% 56% / 0.1) 0px, transparent 50%),
-                     radial-gradient(at 0% 50%, hsl(217 91% 60% / 0.1) 0px, transparent 50%);
+    --gradient-primary: linear-gradient(135deg, hsl(218 84% 40%), hsl(214 80% 52%));
+    --gradient-gold: linear-gradient(135deg, hsl(41 72% 46%), hsl(45 82% 62%));
+    --gradient-secondary: linear-gradient(135deg, hsl(220 16% 22%), hsl(220 12% 38%));
+    --gradient-success: linear-gradient(135deg, hsl(152 58% 32%), hsl(168 55% 36%));
+    --gradient-card: linear-gradient(145deg, hsl(0 0% 100% / 0.94), hsl(220 14% 97% / 0.8));
+    --gradient-hero: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 14% 97%) 55%, hsl(41 72% 46% / 0.06) 100%);
+    --gradient-mesh: radial-gradient(at 20% 0%, hsl(218 84% 45% / 0.10) 0px, transparent 55%),
+                     radial-gradient(at 85% 10%, hsl(41 72% 46% / 0.12) 0px, transparent 50%),
+                     radial-gradient(at 50% 100%, hsl(220 14% 60% / 0.10) 0px, transparent 55%);
 
-    /* Enhanced Glass effects */
-    --glass-bg: hsl(0 0% 100% / 0.7);
-    --glass-bg-strong: hsl(0 0% 100% / 0.85);
-    --glass-border: hsl(217 91% 60% / 0.15);
-    --glass-border-strong: hsl(217 91% 60% / 0.25);
-    --glass-highlight: hsl(0 0% 100% / 0.5);
+    /* Glass effects */
+    --glass-bg: hsl(0 0% 100% / 0.78);
+    --glass-bg-strong: hsl(0 0% 100% / 0.92);
+    --glass-border: hsl(220 13% 88%);
+    --glass-border-strong: hsl(41 72% 46% / 0.35);
+    --glass-highlight: hsl(0 0% 100% / 0.6);
 
     /* Shadows */
-    --shadow-glow: 0 0 60px hsl(217 91% 60% / 0.2);
-    --shadow-glow-strong: 0 0 80px hsl(217 91% 60% / 0.35);
-    --shadow-card: 0 8px 32px -8px hsl(233 20% 12% / 0.1);
-    --shadow-card-hover: 0 20px 40px -12px hsl(233 20% 12% / 0.15);
-    --shadow-float: 0 25px 50px -12px hsl(233 20% 12% / 0.12);
-    --shadow-inset: inset 0 1px 0 0 hsl(0 0% 100% / 0.5);
+    --shadow-glow: 0 0 50px hsl(41 72% 46% / 0.16);
+    --shadow-glow-strong: 0 0 70px hsl(41 72% 46% / 0.28);
+    --shadow-card: 0 1px 2px hsl(220 18% 12% / 0.05), 0 8px 24px -12px hsl(220 18% 12% / 0.14);
+    --shadow-card-hover: 0 2px 4px hsl(220 18% 12% / 0.05), 0 20px 40px -16px hsl(220 18% 12% / 0.2);
+    --shadow-float: 0 24px 48px -18px hsl(220 18% 12% / 0.22);
+    --shadow-inset: inset 0 1px 0 0 hsl(0 0% 100% / 0.6);
+    --shadow-button: 0 1px 2px hsl(220 18% 12% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.16);
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 233 20% 12%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-foreground: 220 18% 12%;
+    --sidebar-primary: 218 84% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 15% 96%;
-    --sidebar-accent-foreground: 233 20% 12%;
-    --sidebar-border: 220 15% 88%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-accent: 220 14% 96%;
+    --sidebar-accent-foreground: 220 18% 12%;
+    --sidebar-border: 220 13% 90%;
+    --sidebar-ring: 41 72% 46%;
 
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 76% 36%;
-    --chart-3: 271 81% 56%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 0 84% 60%;
+    --chart-1: 218 84% 45%;
+    --chart-2: 41 72% 46%;
+    --chart-3: 220 12% 45%;
+    --chart-4: 152 58% 32%;
+    --chart-5: 0 72% 47%;
 
     --sidebar: 0 0% 100%;
 
@@ -116,6 +123,7 @@
     --tracking-normal: 0em;
     --spacing: 0.25rem;
   }
+
 
   .dark {
     /* Dark mode - BitBite signature look */
