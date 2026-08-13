@@ -260,24 +260,37 @@
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--primary) / 0.7);
+    background: hsl(var(--gold) / 0.75);
   }
 
   .dark ::-webkit-scrollbar-track {
-    background: hsl(233 25% 8%);
+    background: hsl(var(--background));
   }
 
   .dark ::-webkit-scrollbar-thumb {
-    background: hsl(233 18% 22%);
-    border-color: hsl(233 25% 8%);
+    background: hsl(220 10% 20%);
+    border-color: hsl(var(--background));
   }
 
   .dark ::-webkit-scrollbar-thumb:hover {
-    background: hsl(217 91% 60%);
+    background: hsl(var(--gold) / 0.8);
   }
 }
 
 @layer utilities {
+  /* Gold accents */
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hairline-gold {
+    background: linear-gradient(90deg, transparent, hsl(var(--gold) / 0.6), transparent);
+    height: 1px;
+  }
+
   /* Glass morphism utilities */
   .glass {
     background: var(--glass-bg);
