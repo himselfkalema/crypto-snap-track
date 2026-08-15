@@ -52,6 +52,11 @@ export default {
           soft: 'hsl(var(--gold-soft))',
           foreground: 'hsl(var(--gold-foreground))'
         },
+        onyx: {
+          DEFAULT: 'hsl(var(--onyx))',
+          hover: 'hsl(var(--onyx-hover))',
+          foreground: 'hsl(var(--onyx-foreground))'
+        },
 
         'crypto-green': 'hsl(var(--crypto-green))',
         'crypto-red': 'hsl(var(--crypto-red))',
