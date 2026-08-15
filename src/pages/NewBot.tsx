@@ -152,7 +152,7 @@ export default function NewBot() {
 
           <div className="flex gap-2 justify-end">
             <Button variant="outline" onClick={() => navigate('/bots')}>Cancel</Button>
-            <Button className="bg-gradient-primary" onClick={submit} disabled={submitting}>Create bot</Button>
+            <Button className="" onClick={submit} disabled={submitting}>Create bot</Button>
           </div>
         </Card>
         </VerifiedGate>

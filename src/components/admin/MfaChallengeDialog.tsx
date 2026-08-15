@@ -65,7 +65,7 @@ export function MfaChallengeDialog({ open, title, description, onCancel, onVerif
         {error && <p className="text-sm text-destructive text-center">{error}</p>}
         <div className="flex gap-2">
           <Button variant="outline" className="flex-1" onClick={onCancel} disabled={busy}>Cancel</Button>
-          <Button className="flex-1 bg-gradient-primary" onClick={verify} disabled={busy || code.length !== 6}>
+          <Button className="flex-1 " onClick={verify} disabled={busy || code.length !== 6}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
           </Button>
         </div>

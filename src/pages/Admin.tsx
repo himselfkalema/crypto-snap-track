@@ -239,7 +239,7 @@ export default function Admin() {
               <Input value={annTitle} onChange={e => setAnnTitle(e.target.value)} maxLength={200} />
               <Label>Body</Label>
               <Textarea value={annBody} onChange={e => setAnnBody(e.target.value)} rows={5} maxLength={2000} />
-              <Button onClick={publishAnnouncement} className="bg-gradient-primary">Publish</Button>
+              <Button onClick={publishAnnouncement} className="">Publish</Button>
             </Card>
           </TabsContent>
 

@@ -176,7 +176,7 @@ export default function OfferDetail() {
                 )}
               </div>
 
-              <Button onClick={startTrade} disabled={submitting || feeLoading} className="w-full bg-gradient-primary mt-4">
+              <Button onClick={startTrade} disabled={submitting || feeLoading} className="w-full mt-4">
                 {submitting ? 'Starting…' : (offer.type === 'buy' ? `Sell ${offer.coin}` : `Buy ${offer.coin}`)}
               </Button>
             </VerifiedGate>

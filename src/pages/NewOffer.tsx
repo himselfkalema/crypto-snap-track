@@ -154,7 +154,7 @@ export default function NewOffer() {
               <Textarea value={terms} onChange={e => setTerms(e.target.value)} maxLength={2000} rows={4} placeholder="e.g. Please send payment within 15 minutes. No third-party payments." />
             </div>
 
-            <Button type="submit" className="w-full bg-gradient-primary" disabled={submitting}>
+            <Button type="submit" className="w-full " disabled={submitting}>
               {submitting ? 'Publishing…' : 'Publish offer'}
             </Button>
           </form>

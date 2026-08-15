@@ -224,7 +224,7 @@ export default function AdminLogin() {
                     value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10" />
                 </div>
               </div>
-              <Button type="submit" className="w-full bg-gradient-primary" disabled={busy}>
+              <Button type="submit" className="w-full " disabled={busy}>
                 {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Continue'}
               </Button>
             </form>
@@ -254,7 +254,7 @@ export default function AdminLogin() {
               </div>
               <div className="flex gap-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={cancelAndSignOut}>Cancel</Button>
-                <Button type="submit" className="flex-1 bg-gradient-primary" disabled={busy || code.length !== 6}>
+                <Button type="submit" className="flex-1 " disabled={busy || code.length !== 6}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Enable MFA'}
                 </Button>
               </div>
@@ -271,7 +271,7 @@ export default function AdminLogin() {
                 className="text-center font-mono text-xl tracking-[0.4em]" placeholder="123456" />
               <div className="flex gap-2">
                 <Button type="button" variant="outline" className="flex-1" onClick={cancelAndSignOut}>Cancel</Button>
-                <Button type="submit" className="flex-1 bg-gradient-primary" disabled={busy || code.length !== 6}>
+                <Button type="submit" className="flex-1 " disabled={busy || code.length !== 6}>
                   {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Verify'}
                 </Button>
               </div>

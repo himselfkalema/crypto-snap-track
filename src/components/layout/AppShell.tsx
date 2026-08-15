@@ -129,7 +129,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SidebarNav />
           </div>
           <div className="p-3 border-t border-border/40">
-            <Button className="w-full bg-gradient-primary" size="sm" onClick={() => navigate('/offers/new')}>
+            <Button className="w-full " size="sm" onClick={() => navigate('/offers/new')}>
               <Plus className="h-4 w-4 mr-1" /> Create Offer
             </Button>
           </div>

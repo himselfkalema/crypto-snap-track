@@ -68,7 +68,7 @@ export default function Landing() {
             Trade Bitcoin, Ethereum, USDT, Solana and more with trusted users worldwide.
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild size="lg" className="bg-gradient-primary glow-hover">
+            <Button asChild size="lg" className="">
               <Link to="/auth?tab=signup">Start Trading <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
             <Button asChild size="lg" variant="outline">
@@ -165,7 +165,7 @@ export default function Landing() {
                   </li>
                 ))}
               </ul>
-              <Button asChild className={`mt-6 w-full ${p.highlight ? 'bg-gradient-primary' : ''}`} variant={p.highlight ? 'default' : 'outline'}>
+              <Button asChild className={`mt-6 w-full ${p.highlight ? '' : ''}`} variant={p.highlight ? 'default' : 'outline'}>
                 <Link to="/pricing">{p.cta}</Link>
               </Button>
             </Card>

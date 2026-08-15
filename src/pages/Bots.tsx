@@ -116,7 +116,7 @@ export default function Bots() {
             </div>
             <Button
               size="lg"
-              className="bg-gradient-primary shadow-glow hover:shadow-glow-strong transition-shadow"
+              className="hover:shadow-glow-strong transition-shadow"
               disabled={atLimit}
               onClick={() => navigate('/bots/new')}
             >

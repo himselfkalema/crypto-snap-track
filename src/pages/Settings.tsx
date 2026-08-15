@@ -79,7 +79,7 @@ export default function Settings() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={save} disabled={saving} className="bg-gradient-primary">{saving ? 'Saving…' : 'Save profile'}</Button>
+          <Button onClick={save} disabled={saving} className="">{saving ? 'Saving…' : 'Save profile'}</Button>
         </Card>
 
         <Card className="glass-card p-6 space-y-3">
