@@ -116,7 +116,7 @@ export default function Bots() {
             </div>
             <Button
               size="lg"
-              className="bg-gradient-primary shadow-glow hover:shadow-glow-strong transition-shadow"
+              className="transition-colors"
               disabled={atLimit}
               onClick={() => navigate('/bots/new')}
             >
@@ -210,7 +210,6 @@ export default function Bots() {
               </div>
               <Button
                 onClick={() => navigate('/bots/new')}
-                className="bg-gradient-primary shadow-glow"
               >
                 <Plus className="h-4 w-4" /> Create your first bot
               </Button>

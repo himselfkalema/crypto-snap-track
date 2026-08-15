@@ -44,7 +44,7 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
           className={({ isActive }) =>
             `group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
               isActive
-                ? 'bg-gradient-primary text-primary-foreground shadow-lg shadow-primary/20'
+                ? ' text-primary-foreground shadow-lg shadow-primary/20'
                 : 'text-muted-foreground hover:text-foreground hover:bg-secondary/60'
             }`
           }
@@ -99,11 +99,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
               </Button>
               {user ? (
-                <Button size="sm" onClick={() => navigate('/dashboard')} className="bg-gradient-primary">Dashboard</Button>
+                <Button size="sm" onClick={() => navigate('/dashboard')} className="">Dashboard</Button>
               ) : (
                 <>
                   <Button variant="ghost" size="sm" onClick={() => navigate('/auth')}>Sign in</Button>
-                  <Button size="sm" onClick={() => navigate('/auth?tab=signup')} className="bg-gradient-primary">Get started</Button>
+                  <Button size="sm" onClick={() => navigate('/auth?tab=signup')} className="">Get started</Button>
                 </>
               )}
             </div>
@@ -129,7 +129,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <SidebarNav />
           </div>
           <div className="p-3 border-t border-border/40">
-            <Button className="w-full bg-gradient-primary" size="sm" onClick={() => navigate('/offers/new')}>
+            <Button className="w-full " size="sm" onClick={() => navigate('/offers/new')}>
               <Plus className="h-4 w-4 mr-1" /> Create Offer
             </Button>
           </div>

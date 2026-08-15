@@ -106,7 +106,7 @@ export function TotpCard() {
           <Button variant="outline" onClick={disable}>Disable</Button>
         </div>
       ) : (
-        <Button onClick={startEnroll} disabled={enrolling} className="bg-gradient-primary">
+        <Button onClick={startEnroll} disabled={enrolling} className="">
           {enrolling ? 'Preparing…' : 'Enable authenticator app'}
         </Button>
       )}

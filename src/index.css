@@ -41,6 +41,11 @@
     --gold-soft: 43 68% 60%;
     --gold-foreground: 40 60% 8%;
 
+    /* Onyx — the black button surface (identical in both themes) */
+    --onyx: 220 16% 9%;
+    --onyx-hover: 220 16% 13%;
+    --onyx-foreground: 44 44% 88%;
+
     --success: 152 58% 32%;
     --success-foreground: 0 0% 100%;
 
@@ -152,6 +157,11 @@
     --gold: 43 78% 56%;
     --gold-soft: 45 86% 68%;
     --gold-foreground: 40 60% 8%;
+
+    /* Onyx — the black button surface (identical in both themes) */
+    --onyx: 220 16% 7%;
+    --onyx-hover: 220 14% 12%;
+    --onyx-foreground: 44 46% 90%;
 
     --success: 152 62% 44%;
     --success-foreground: 220 30% 6%;

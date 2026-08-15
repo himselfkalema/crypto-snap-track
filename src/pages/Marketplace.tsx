@@ -70,7 +70,7 @@ export default function Marketplace() {
             <p className="text-muted-foreground mt-1">Live P2P offers from traders worldwide.</p>
           </div>
           {user && (
-            <Button asChild className="bg-gradient-primary">
+            <Button asChild className="">
               <Link to="/offers/new">+ Create offer</Link>
             </Button>
           )}

@@ -60,7 +60,7 @@ export default function Pricing() {
               <Button
                 onClick={() => checkout(p.id)}
                 disabled={current === p.id || loading === p.id}
-                className={`mt-6 w-full ${p.highlight ? 'bg-gradient-primary' : ''}`}
+                className={`mt-6 w-full `}
                 variant={p.highlight ? 'default' : 'outline'}
               >
                 {current === p.id ? 'Current plan' : loading === p.id ? 'Loading…' : p.id === 'free' ? 'Get started' : 'Upgrade'}

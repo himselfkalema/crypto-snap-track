@@ -5,29 +5,31 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold tracking-tight ring-offset-background transition-all duration-200 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border text-sm font-semibold tracking-tight ring-offset-background transition-colors duration-150 ease-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/60 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
+        // Black card with a gold hairline and gold label — the house style
         default:
-          "bg-primary text-primary-foreground shadow-button hover:bg-primary/90 hover:shadow-md",
+          "border-gold/30 bg-onyx text-gold shadow-2xs hover:bg-onyx-hover hover:border-gold/60",
         gold:
-          "bg-gradient-gold text-gold-foreground shadow-button hover:brightness-110 hover:shadow-glow",
+          "border-gold bg-gold text-gold-foreground shadow-2xs hover:bg-gold-soft hover:border-gold-soft",
         premium:
-          "bg-gradient-primary text-primary-foreground shadow-button ring-1 ring-inset ring-gold/25 hover:brightness-110 hover:shadow-glow",
+          "border-gold/45 bg-onyx text-gold shadow-sm hover:bg-onyx-hover hover:border-gold",
         destructive:
-          "bg-destructive text-destructive-foreground shadow-button hover:bg-destructive/90",
+          "border-destructive/60 bg-destructive text-destructive-foreground shadow-2xs hover:bg-destructive/90",
         outline:
-          "border border-border bg-transparent text-foreground shadow-2xs hover:border-gold/50 hover:bg-secondary hover:text-foreground",
+          "border-border bg-card text-foreground shadow-2xs hover:border-gold/50 hover:bg-secondary",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-2xs hover:bg-secondary/70",
-        ghost: "text-foreground/80 hover:bg-secondary hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline hover:text-gold",
+          "border-border bg-secondary text-secondary-foreground shadow-2xs hover:bg-secondary/70",
+        ghost:
+          "border-transparent text-foreground/80 hover:border-border hover:bg-secondary hover:text-foreground",
+        link: "border-transparent text-primary underline-offset-4 hover:underline hover:text-gold",
       },
       size: {
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
-        lg: "h-12 rounded-lg px-8 text-base",
+        lg: "h-12 rounded-md px-8 text-base",
         icon: "h-10 w-10",
       },
     },
