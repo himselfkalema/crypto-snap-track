@@ -132,7 +132,7 @@ export default function OfferDetail() {
           {isOwn ? (
             <p className="text-sm text-muted-foreground">This is your own offer. Manage it from your dashboard.</p>
           ) : !user ? (
-            <Button onClick={() => navigate('/auth')} className="w-full bg-gradient-primary">
+            <Button onClick={() => navigate('/auth')} className="w-full">
               Sign in to trade
             </Button>
           ) : (
